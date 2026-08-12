@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>애니티즈 MD 구매 계산기</title>
-    <!-- 이미지 저장용 html2canvas 라이브러리 추가 -->
+    <!-- 이미지 저장용 html2canvas 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -513,7 +513,7 @@
 
         const mdData = [
             { id: 0, name: '타이니 애니티즈 미니 인형', limit: '종류무관 1개', price: 16000, hasMembers: true },
-            { id: 1, name: '실버 애니티즈 인형 키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
+            { id: 1, name: '실버 애니티즈 인형키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
             { id: 2, name: '별의 애니티즈 키링', limit: '종류무관 1개', price: 24000, hasMembers: true },
             { id: 3, name: '응원봉 커버', limit: '종류무관 1개', price: 24000, hasMembers: true },
             { id: 4, name: '타이니 응원봉 스크런치', limit: '종류무관 1개', price: 20000, hasMembers: true },
@@ -522,13 +522,13 @@
             { id: 7, name: '별빛유리 텀블러', limit: '종류무관 2개', price: 15000, hasMembers: false },
             { id: 8, name: '반팔 티셔츠', limit: '종류무관 2개', price: 39000, hasMembers: false },
             { id: 9, name: '인형 볼펜', limit: '종류무관 1개', price: 18000, hasMembers: true },
-            { id: 10, name: '인덱스 점착메모 세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
+            { id: 10, name: '인덱스 점착메모세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
             { id: 11, name: '워터입체 스티커', limit: '종류무관 2개', price: 12000, hasMembers: false },
             { id: 12, name: '포토카드 바인더', limit: '종류무관 2개', price: 15000, hasMembers: true },
             { id: 13, name: '트레카', limit: '최대 20개', price: 5000, hasMembers: false },
             { id: 15, name: '아크릴 마그넷 증명사진 홀더', limit: '종류무관 2개', price: 16000, hasMembers: true },
             { id: 16, name: '캔오프너 키링', limit: '종류무관 2개', price: 16000, hasMembers: true },
-            { id: 17, name: '랜덤 미니어쳐 키링', limit: '종류무관 8개', price: 8000, hasMembers: true },
+            { id: 17, name: '랜덤 미니어쳐 키링', limit: '종류무관 8개', price: 8000, hasMembers: false },
             { id: 18, name: '타이니 무드등', limit: '예약판매', price: 38000, hasMembers: true },
             { id: 19, name: '롱 바디필로우', limit: '예약판매', price: 49000, hasMembers: true }
         ];
@@ -764,7 +764,7 @@
 
             const target = document.getElementById('modalCaptureArea');
             html2canvas(target, {
-                scale: 2, // 선명하게 캡처
+                scale: 2,
                 backgroundColor: "#ffffff",
                 useCORS: true
             }).then(canvas => {
