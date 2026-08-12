@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>애니티즈 MD 구매 계산기</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+            --text-sub: #636e72;
+            --border: #edf2f7;
+            --accent: #fd79a8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 120px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            padding: 24px 20px 20px 20px;
+            text-align: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .btn-view-summary {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: all 0.2s ease;
+        }
+
+        .btn-view-summary:active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1.5px solid #edf2f7;
+            transition: all 0.2s ease;
+        }
+
+        .item-card.has-selection {
+            border-color: var(--primary);
+            background-color: #fbfaff;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .item-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .item-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .item-limit {
+            background: #f1f2f6;
+            color: var(--text-sub);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        .item-total-badge {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: #eeeaff;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .member-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .member-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .member-box.active {
+            background: #f0edff;
+            border-color: var(--primary-light);
+        }
+
+        .member-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 4px;
+        }
+
+        .member-box.active .member-name {
+            color: var(--primary);
+        }
+
+        .counter-sm {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .counter-sm button {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: white;
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .counter-sm span {
+            width: 18px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .simple-counter-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .simple-label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        .counter-lg {
+            display: flex;
+            align-items: center;
+            background: #f1f2f6;
+            border-radius: 10px;
+            padding: 3px;
+        }
+
+        .counter-lg button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: white;
+            color: var(--text);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .counter-lg span {
+            width: 36px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            padding: 16px 20px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            z-index: 100;
+        }
+
+        .bottom-content {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .total-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .total-label {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+
+        .total-amount {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-reset {
+            background: #f1f2f6;
+            color: var(--text-sub);
+        }
+
+        .btn-summary {
+            background: #eeeaff;
+            color: var(--primary);
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.25s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 18px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            color: var(--text-sub);
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .summary-item {
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-item-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .summary-item-details {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .summary-empty {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+        }
+
+        .modal-footer {
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-total-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0edff;
+            padding: 12px 16px;
+            border-radius: 12px;
+        }
+
+        .modal-total-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-total-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(45, 52, 54, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 3000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>애니티즈 MD 구매 계산기</h1>
+        <p>멤버별/단품별 수량을 선택하면 총금액이 자동 계산됩니다</p>
+        <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
+    </header>
+
+    <div class="container" id="itemList"></div>
+
+    <div class="bottom-bar">
+        <div class="bottom-content">
+            <div class="total-container">
+                <span class="total-label" id="totalCount">총 0개 선택</span>
+                <span class="total-amount" id="totalPrice">0원</span>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-reset" onclick="resetAll()">초기화</button>
+                <button class="btn btn-summary" onclick="openModal()">내역 보기</button>
+                <button class="btn btn-copy" onclick="copySummary()">복사</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 구매 내역 모달 팝업 -->
+    <div class="modal-overlay" id="summaryModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">📋 나의 MD 구매 내역</div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 내역이 여기에 동적으로 생성됩니다 -->
+            </div>
+            <div class="modal-footer">
+                <div class="modal-total-box">
+                    <span class="modal-total-label" id="modalTotalCount">총 0개 선택</span>
+                    <span class="modal-total-val" id="modalTotalPrice">0원</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-reset" style="flex:1;" onclick="closeModal()">닫기</button>
+                    <button class="btn btn-copy" style="flex:2;" onclick="copySummary()">내역 복사하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">내역이 복사되었습니다!</div>
+
+    <script>
+        const members = ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'];
+
+        const mdData = [
+            { id: 0, name: '타이니애니티즈미니인형', limit: '종류무관 1개', price: 16000, hasMembers: true },
+            { id: 1, name: '실버애니티즈인형키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
+            { id: 2, name: '별의애니티즈키링', limit: '종류무관 1개', price: 24000, hasMembers: true },
+            { id: 3, name: '응원봉커버', limit: '종류무관 1개', price: 24000, hasMembers: true },
+            { id: 4, name: '타이니응원봉스크런치', limit: '종류무관 1개', price: 20000, hasMembers: true },
+            { id: 5, name: '벽걸이수납포켓', limit: '종류무관 2개', price: 28000, hasMembers: true },
+            { id: 6, name: '타이니러그', limit: '종류무관 1개', price: 30000, hasMembers: false },
+            { id: 7, name: '별빛유리텀블러', limit: '종류무관 2개', price: 15000, hasMembers: false },
+            { id: 8, name: '반팔티셔츠', limit: '종류무관 2개', price: 39000, hasMembers: false },
+            { id: 9, name: '인형볼펜', limit: '종류무관 1개', price: 18000, hasMembers: true },
+            { id: 10, name: '인덱스점착메모세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
+            { id: 11, name: '워터입체스티커', limit: '종류무관 2개', price: 12000, hasMembers: false },
+            { id: 12, name: '포토카드바인더', limit: '종류무관 2개', price: 15000, hasMembers: false },
+            { id: 13, name: '트레카', limit: '최대 20개', price: 5000, hasMembers: false },
+            { id: 14, name: '아크릴쉐이커마그네틱스마트톡', limit: '종류무관 2개', price: 16000, hasMembers: true },
+            { id: 15, name: '아크릴마그넷증명사진홀더', limit: '종류무관 2개', price: 16000, hasMembers: true },
+            { id: 16, name: '캔오프너키링', limit: '종류무관 2개', price: 16000, hasMembers: true },
+            { id: 17, name: '랜덤미니어쳐키링', limit: '종류무관 8개', price: 8000, hasMembers: false },
+            { id: 18, name: '타이니무드등', limit: '예약판매', price: 38000, hasMembers: false },
+            { id: 19, name: '롱바디필로우', limit: '예약판매', price: 49000, hasMembers: false }
+        ];
+
+        const state = {};
+
+        function initData() {
+            mdData.forEach(item => {
+                state[item.id] = {};
+                if (item.hasMembers) {
+                    members.forEach((_, mIdx) => state[item.id][mIdx] = 0);
+                } else {
+                    state[item.id]['simple'] = 0;
+                }
+            });
+        }
+
+        function getItemTotalCount(itemId) {
+            const item = mdData[itemId];
+            if (item.hasMembers) {
+                return members.reduce((sum, _, mIdx) => sum + (state[itemId][mIdx] || 0), 0);
+            } else {
+                return state[itemId]['simple'] || 0;
+            }
+        }
+
+        function render() {
+            const container = document.getElementById('itemList');
+            container.innerHTML = '';
+
+            mdData.forEach(item => {
+                const totalCount = getItemTotalCount(item.id);
+                const card = document.createElement('div');
+                card.className = 'item-card' + (totalCount > 0 ? ' has-selection' : '');
+
+                let bodyHtml = '';
+
+                if (item.hasMembers) {
+                    let memberGridHtml = '<div class="member-grid">';
+                    members.forEach((mName, mIdx) => {
+                        const count = state[item.id][mIdx] || 0;
+                        memberGridHtml += `
+                            <div class="member-box ${count > 0 ? 'active' : ''}">
+                                <div class="member-name">${mName}</div>
+                                <div class="counter-sm">
+                                    <button onclick="changeMemberQty(${item.id}, ${mIdx}, -1)">-</button>
+                                    <span>${count}</span>
+                                    <button onclick="changeMemberQty(${item.id}, ${mIdx}, 1)">+</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    memberGridHtml += '</div>';
+                    bodyHtml = memberGridHtml;
+                } else {
+                    const count = state[item.id]['simple'] || 0;
+                    bodyHtml = `
+                        <div class="simple-counter-wrapper">
+                            <span class="simple-label">구매 수량</span>
+                            <div class="counter-lg">
+                                <button onclick="changeSimpleQty(${item.id}, -1)">-</button>
+                                <span>${count}</span>
+                                <button onclick="changeSimpleQty(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="item-header">
+                        <div>
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-meta">
+                                <span class="item-price">${item.price.toLocaleString()}원</span>
+                                ${item.limit ? `<span class="item-limit">${item.limit}</span>` : ''}
+                            </div>
+                        </div>
+                        ${totalCount > 0 ? `<div class="item-total-badge">${totalCount}개 선택됨</div>` : ''}
+                    </div>
+                    ${bodyHtml}
+                `;
+
+                container.appendChild(card);
+            });
+
+            updateTotal();
+        }
+
+        function changeMemberQty(itemId, memberIdx, change) {
+            const nextVal = (state[itemId][memberIdx] || 0) + change;
+            if (nextVal >= 0) {
+                state[itemId][memberIdx] = nextVal;
+                render();
+            }
+        }
+
+        function changeSimpleQty(itemId, change) {
+            const nextVal = (state[itemId]['simple'] || 0) + change;
+            if (nextVal >= 0) {
+                state[itemId]['simple'] = nextVal;
+                render();
+            }
+        }
+
+        function updateTotal() {
+            let totalAmount = 0;
+            let totalCnt = 0;
+
+            mdData.forEach(item => {
+                const cnt = getItemTotalCount(item.id);
+                totalCnt += cnt;
+                totalAmount += cnt * item.price;
+            });
+
+            document.getElementById('totalPrice').innerText = totalAmount.toLocaleString() + '원';
+            document.getElementById('totalCount').innerText = `총 ${totalCnt}개 선택`;
+        }
+
+        function resetAll() {
+            initData();
+            render();
+            showToast("수량이 초기화되었습니다.");
+        }
+
+        function openModal() {
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = '';
+
+            let totalAmount = 0;
+            let totalCnt = 0;
+            let hasSelection = false;
+
+            mdData.forEach(item => {
+                const cnt = getItemTotalCount(item.id);
+                if (cnt > 0) {
+                    hasSelection = true;
+                    const itemTotal = cnt * item.price;
+                    totalAmount += itemTotal;
+                    totalCnt += cnt;
+
+                    const summaryItem = document.createElement('div');
+                    summaryItem.className = 'summary-item';
+
+                    let detailsStr = '';
+                    if (item.hasMembers) {
+                        const mDetails = [];
+                        members.forEach((mName, mIdx) => {
+                            if (state[item.id][mIdx] > 0) {
+                                mDetails.push(`${mName}:${state[item.id][mIdx]}`);
+                            }
+                        });
+                        detailsStr = `(${mDetails.join(', ')}) · 총 ${cnt}개`;
+                    } else {
+                        detailsStr = `수량: ${cnt}개`;
+                    }
+
+                    summaryItem.innerHTML = `
+                        <div class="summary-item-title">${item.name}</div>
+                        <div class="summary-item-details">
+                            <span>${detailsStr}</span>
+                            <span style="font-weight:700; color:var(--primary);">${itemTotal.toLocaleString()}원</span>
+                        </div>
+                    `;
+                    modalBody.appendChild(summaryItem);
+                }
+            });
+
+            if (!hasSelection) {
+                modalBody.innerHTML = '<div class="summary-empty">선택된 상품이 없습니다.<br>수량을 선택하신 후 확인해 주세요!</div>';
+            }
+
+            document.getElementById('modalTotalPrice').innerText = totalAmount.toLocaleString() + '원';
+            document.getElementById('modalTotalCount').innerText = `총 ${totalCnt}개 선택`;
+
+            document.getElementById('summaryModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('summaryModal').classList.remove('active');
+        }
+
+        function copySummary() {
+            let text = "[애니티즈 MD 구매 목록]\n";
+            let totalAmount = 0;
+            let totalCnt = 0;
+
+            mdData.forEach(item => {
+                const cnt = getItemTotalCount(item.id);
+                if (cnt > 0) {
+                    const itemTotal = cnt * item.price;
+                    totalAmount += itemTotal;
+                    totalCnt += cnt;
+
+                    if (item.hasMembers) {
+                        const mDetails = [];
+                        members.forEach((mName, mIdx) => {
+                            if (state[item.id][mIdx] > 0) {
+                                mDetails.push(mName + ":" + state[item.id][mIdx]);
+                            }
+                        });
+                        text += "- " + item.name + " (" + mDetails.join(", ") + ") : 총 " + cnt + "개 (" + itemTotal.toLocaleString() + "원)\n";
+                    } else {
+                        text += "- " + item.name + " x " + cnt + "개 (" + itemTotal.toLocaleString() + "원)\n";
+                    }
+                }
+            });
+
+            if (totalCnt === 0) {
+                showToast("선택된 상품이 없습니다.");
+                return;
+            }
+
+            text += "\n총 수량: " + totalCnt + "개\n총 금액: " + totalAmount.toLocaleString() + "원";
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("구매 내역이 복사되었습니다!");
+            }).catch(() => {
+                showToast("복사에 실패했습니다.");
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        initData();
+        render();
+    </script>
+</body>
+</html>
