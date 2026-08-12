@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>애니티즈 MD 구매 계산기</title>
+    <!-- 이미지 저장용 html2canvas 라이브러리 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -305,6 +307,12 @@
             box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
         }
 
+        .btn-save {
+            background: #00b894;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
+        }
+
         /* Modal Styles */
         .modal-overlay {
             position: fixed;
@@ -332,7 +340,7 @@
             background: white;
             width: 100%;
             max-width: 500px;
-            max-height: 80vh;
+            max-height: 85vh;
             border-radius: 20px;
             display: flex;
             flex-direction: column;
@@ -476,22 +484,23 @@
 
     <!-- 구매 내역 모달 팝업 -->
     <div class="modal-overlay" id="summaryModal">
-        <div class="modal-container">
+        <div class="modal-container" id="modalCaptureArea">
             <div class="modal-header">
                 <div class="modal-title">📋 나의 MD 구매 내역</div>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
-                <!-- 내역이 여기에 동적으로 생성됩니다 -->
+                <!-- 내역이 동적으로 생성됩니다 -->
             </div>
             <div class="modal-footer">
                 <div class="modal-total-box">
                     <span class="modal-total-label" id="modalTotalCount">총 0개 선택</span>
                     <span class="modal-total-val" id="modalTotalPrice">0원</span>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-reset" style="flex:1;" onclick="closeModal()">닫기</button>
-                    <button class="btn btn-copy" style="flex:2;" onclick="copySummary()">내역 복사하기</button>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-reset" style="flex: 1;" onclick="closeModal()">닫기</button>
+                    <button class="btn btn-copy" style="flex: 1.2;" onclick="copySummary()">내역 복사</button>
+                    <button class="btn btn-save" style="flex: 1.2;" onclick="saveAsImage()">📸 이미지 저장</button>
                 </div>
             </div>
         </div>
@@ -503,17 +512,17 @@
         const members = ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'];
 
         const mdData = [
-            { id: 0, name: '타이니 애니티즈 미니인형', limit: '종류무관 1개', price: 16000, hasMembers: true },
-            { id: 1, name: '실버 애니티즈 인형키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
-            { id: 2, name: '별의 애니티즈키링', limit: '종류무관 1개', price: 24000, hasMembers: true },
+            { id: 0, name: '타이니 애니티즈 미니 인형', limit: '종류무관 1개', price: 16000, hasMembers: true },
+            { id: 1, name: '실버 애니티즈 인형 키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
+            { id: 2, name: '별의 애니티즈 키링', limit: '종류무관 1개', price: 24000, hasMembers: true },
             { id: 3, name: '응원봉 커버', limit: '종류무관 1개', price: 24000, hasMembers: true },
             { id: 4, name: '타이니 응원봉 스크런치', limit: '종류무관 1개', price: 20000, hasMembers: true },
             { id: 5, name: '벽걸이 수납포켓', limit: '종류무관 2개', price: 28000, hasMembers: true },
             { id: 6, name: '타이니 러그', limit: '종류무관 1개', price: 30000, hasMembers: true },
             { id: 7, name: '별빛유리 텀블러', limit: '종류무관 2개', price: 15000, hasMembers: false },
             { id: 8, name: '반팔 티셔츠', limit: '종류무관 2개', price: 39000, hasMembers: false },
-            { id: 9, name: '인형볼펜', limit: '종류무관 1개', price: 18000, hasMembers: true },
-            { id: 10, name: '인덱스 점착메모세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
+            { id: 9, name: '인형 볼펜', limit: '종류무관 1개', price: 18000, hasMembers: true },
+            { id: 10, name: '인덱스 점착메모 세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
             { id: 11, name: '워터입체 스티커', limit: '종류무관 2개', price: 12000, hasMembers: false },
             { id: 12, name: '포토카드 바인더', limit: '종류무관 2개', price: 15000, hasMembers: true },
             { id: 13, name: '트레카', limit: '최대 20개', price: 5000, hasMembers: false },
@@ -739,6 +748,33 @@
                 showToast("구매 내역이 복사되었습니다!");
             }).catch(() => {
                 showToast("복사에 실패했습니다.");
+            });
+        }
+
+        function saveAsImage() {
+            let totalCnt = 0;
+            mdData.forEach(item => totalCnt += getItemTotalCount(item.id));
+
+            if (totalCnt === 0) {
+                showToast("선택된 상품이 없습니다.");
+                return;
+            }
+
+            showToast("이미지 생성 중입니다...");
+
+            const target = document.getElementById('modalCaptureArea');
+            html2canvas(target, {
+                scale: 2, // 선명하게 캡처
+                backgroundColor: "#ffffff",
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '애니티즈_MD_구매내역.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast("이미지가 저장되었습니다!");
+            }).catch(err => {
+                showToast("이미지 저장에 실패했습니다.");
             });
         }
 
