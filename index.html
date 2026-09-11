@@ -294,7 +294,7 @@
     <!-- 홈 (선택) 화면 -->
     <div id="homeScreen">
         <h1 class="home-title">ATEEZ MD 구매 계산기</h1>
-        <p class="home-subtitle">계산하시려는 팝업스토어를 선택해주세요!</p>
+        <p class="home-subtitle">사용하실 계산기를 선택해주세요!</p>
         
         <div class="select-card-container">
             <div class="select-card aniteez" onclick="selectType('aniteez')">
@@ -318,7 +318,7 @@
                 <button class="btn-home" onclick="goHome()">🏠 메인으로</button>
             </div>
             <h1 id="calcTitle">MD 구매 계산기</h1>
-            <p>제품명을 클릭하면 사진을 확인할 수 있습니다!</p>
+            <p>아래 구매 내역에서 총 금액을 확인할 수 있습니다! </p>
             <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
         </header>
 
@@ -332,7 +332,7 @@
                 </div>
                 <div class="btn-group">
                     <button class="btn btn-reset" onclick="resetAll()">초기화</button>
-                    <button class="btn btn-summary" onclick="openModal()">내역 보기</button>
+                    <button class="btn btn-summary" onclick="openModal()">구매 내역</button>
                     <button class="btn btn-copy" onclick="copySummary()">복사</button>
                 </div>
             </div>
@@ -354,7 +354,7 @@
                 </div>
                 <div style="display: flex; gap: 6px;">
                     <button class="btn btn-reset" style="flex: 1;" onclick="closeModal()">닫기</button>
-                    <button class="btn btn-copy" style="flex: 1.2;" onclick="copySummary()">내역 복사</button>
+                    <button class="btn btn-copy" style="flex: 1.2;" onclick="copySummary()">구매 내역</button>
                     <button class="btn btn-save" style="flex: 1.2;" onclick="saveAsImage()">📸 이미지 저장</button>
                 </div>
             </div>
