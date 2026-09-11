@@ -227,7 +227,8 @@
         .item-meta {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
         .item-price {
@@ -242,6 +243,16 @@
             padding: 2px 6px;
             border-radius: 6px;
             font-size: 0.75rem;
+        }
+
+        /* 포카 유무 태그 디자인 */
+        .item-poca {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
         }
 
         .item-total-badge {
@@ -666,43 +677,45 @@
     <script>
         const members = ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'];
 
+        // 애니티즈 데이터
         const dataAniteez = [
-            { id: 0, name: '타이니애니티즈미니인형', limit: '종류무관 1개', price: 16000, hasMembers: true },
-            { id: 1, name: '실버애니티즈인형키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
-            { id: 2, name: '별의애니티즈키링', limit: '종류무관 1개', price: 24000, hasMembers: true },
-            { id: 3, name: '응원봉커버', limit: '종류무관 1개', price: 24000, hasMembers: true },
-            { id: 4, name: '타이니응원봉스크런치', limit: '종류무관 1개', price: 20000, hasMembers: true },
-            { id: 5, name: '벽걸이수납포켓', limit: '종류무관 2개', price: 28000, hasMembers: true },
-            { id: 6, name: '타이니러그', limit: '종류무관 1개', price: 30000, hasMembers: true },
-            { id: 7, name: '별빛유리텀블러', limit: '종류무관 2개', price: 15000, hasMembers: false },
-            { id: 8, name: '반팔티셔츠', limit: '종류무관 2개', price: 39000, hasMembers: false },
-            { id: 9, name: '인형볼펜', limit: '종류무관 1개', price: 18000, hasMembers: true },
-            { id: 10, name: '인덱스점착메모세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
-            { id: 11, name: '워터입체스티커', limit: '종류무관 2개', price: 12000, hasMembers: false },
-            { id: 12, name: '포토카드바인더', limit: '종류무관 2개', price: 15000, hasMembers: true },
-            { id: 13, name: '트레카', limit: '최대 20개', price: 5000, hasMembers: false },
-            { id: 14, name: '아크릴쉐이커마그네틱스마트톡', limit: '종류무관 2개', price: 16000, hasMembers: false },
-            { id: 15, name: '아크릴마그넷증명사진홀더', limit: '종류무관 2개', price: 16000, hasMembers: true },
-            { id: 16, name: '캔오프너키링', limit: '종류무관 2개', price: 16000, hasMembers: true },
-            { id: 17, name: '랜덤미니어쳐키링', limit: '', price: 8000, hasMembers: false },
-            { id: 18, name: '타이니무드등', limit: '예약판매', price: 38000, hasMembers: true },
-            { id: 19, name: '롱바디필로우', limit: '예약판매', price: 49000, hasMembers: true }
+            { id: 0, name: '타이니애니티즈미니인형', limit: '종류무관 1개', poca: '포카 O', price: 16000, hasMembers: true },
+            { id: 1, name: '실버애니티즈인형키링', limit: '종류무관 1개', poca: '포카 O', price: 28000, hasMembers: true },
+            { id: 2, name: '별의애니티즈키링', limit: '종류무관 1개', poca: '포카 O', price: 24000, hasMembers: true },
+            { id: 3, name: '응원봉커버', limit: '종류무관 1개', poca: '포카 O', price: 24000, hasMembers: true },
+            { id: 4, name: '타이니응원봉스크런치', limit: '종류무관 1개', poca: '포카 O', price: 20000, hasMembers: true },
+            { id: 5, name: '벽걸이수납포켓', limit: '종류무관 2개', poca: '포카 O', price: 28000, hasMembers: true },
+            { id: 6, name: '타이니러그', limit: '종류무관 1개', poca: '포카 O', price: 30000, hasMembers: true },
+            { id: 7, name: '별빛유리텀블러', limit: '종류무관 2개', poca: '포카 X', price: 15000, hasMembers: false },
+            { id: 8, name: '반팔티셔츠', limit: '종류무관 2개', poca: '포카 O', price: 39000, hasMembers: false },
+            { id: 9, name: '인형볼펜', limit: '종류무관 1개', poca: '포카 O', price: 18000, hasMembers: true },
+            { id: 10, name: '인덱스점착메모세트', limit: '종류무관 2개', poca: '포카 X', price: 9000, hasMembers: false },
+            { id: 11, name: '워터입체스티커', limit: '종류무관 2개', poca: '포카 X', price: 12000, hasMembers: false },
+            { id: 12, name: '포토카드바인더', limit: '종류무관 2개', poca: '포카 O', price: 15000, hasMembers: true },
+            { id: 13, name: '트레카', limit: '최대 20개', poca: '포카 O', price: 5000, hasMembers: false },
+            { id: 14, name: '아크릴쉐이커마그네틱스마트톡', limit: '종류무관 2개', poca: '포카 O', price: 16000, hasMembers: false },
+            { id: 15, name: '아크릴마그넷증명사진홀더', limit: '종류무관 2개', poca: '포카 O', price: 16000, hasMembers: true },
+            { id: 16, name: '캔오프너키링', limit: '종류무관 2개', poca: '포카 O', price: 16000, hasMembers: true },
+            { id: 17, name: '랜덤미니어쳐키링', limit: '', poca: '포카 X', price: 8000, hasMembers: false },
+            { id: 18, name: '타이니무드등', limit: '예약판매', poca: '포카 O', price: 38000, hasMembers: true },
+            { id: 19, name: '롱바디필로우', limit: '예약판매', poca: '포카 O', price: 49000, hasMembers: true }
         ];
 
+        // 마이티즈 데이터 (매칭포카, 랜덤포카 삭제 반영됨)
         const dataMighteez = [
-            { id: 0, name: '플러시 키링 - 팝!스타', limit: '1인당 제품별 3개', price: 22000, hasMembers: true },
-            { id: 1, name: '플러시 키링 - 락스타', limit: '1인당 제품별 3개', price: 23000, hasMembers: true },
-            { id: 2, name: '플러시백', limit: '1인당 제품별 3개', price: 42000, hasMembers: true },
-            { id: 3, name: '여권 케이스', limit: '1인당 제품별 3개', price: 23000, hasMembers: true },
-            { id: 4, name: '플러시 참', limit: '1인당 제품별 3개', price: 18000, hasMembers: true },
-            { id: 5, name: '플러시 줄자', limit: '1인당 제품별 3개', price: 16000, hasMembers: true },
-            { id: 6, name: '랜덤 트레카', limit: '1인당 제품별 8개', price: 5000, hasMembers: false },
-            { id: 7, name: '후드집업', limit: '1인당 제품별 3개', price: 79000, hasMembers: false },
-            { id: 8, name: '반팔 티셔츠', limit: '1인당 제품별 3개', price: 39000, hasMembers: false },
-            { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', price: 35000, hasMembers: false },
-            { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', price: 12000, hasMembers: false },
-            { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', price: 11000, hasMembers: false },
-            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', price: 15000, hasMembers: false },
+            { id: 0, name: '플러시 키링 - 팝!스타', limit: '1인당 제품별 3개', poca: '포카 O', price: 22000, hasMembers: true },
+            { id: 1, name: '플러시 키링 - 락스타', limit: '1인당 제품별 3개', poca: '포카 O', price: 23000, hasMembers: true },
+            { id: 2, name: '플러시백', limit: '1인당 제품별 3개', poca: '포카 O', price: 42000, hasMembers: true },
+            { id: 3, name: '여권 케이스', limit: '1인당 제품별 3개', poca: '포카 O', price: 23000, hasMembers: true },
+            { id: 4, name: '플러시 참', limit: '1인당 제품별 3개', poca: '포카 O', price: 18000, hasMembers: true },
+            { id: 5, name: '플러시 줄자', limit: '1인당 제품별 3개', poca: '포카 O', price: 16000, hasMembers: true },
+            { id: 6, name: '랜덤 트레카', limit: '1인당 제품별 8개', poca: '포카 O', price: 5000, hasMembers: false },
+            { id: 7, name: '후드집업', limit: '1인당 제품별 3개', poca: '포카 O', price: 79000, hasMembers: false },
+            { id: 8, name: '반팔 티셔츠', limit: '1인당 제품별 3개', poca: '포카 O', price: 39000, hasMembers: false },
+            { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', poca: '포카 O', price: 35000, hasMembers: false },
+            { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', poca: '포카 O', price: 12000, hasMembers: false },
+            { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', poca: '포카 O', price: 11000, hasMembers: false },
+            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', poca: '포카 O', price: 15000, hasMembers: false }
         ];
 
         let currentType = 'aniteez';
@@ -806,6 +819,7 @@
                             <div class="item-meta">
                                 <span class="item-price">${priceText}</span>
                                 ${item.limit ? `<span class="item-limit">${item.limit}</span>` : ''}
+                                ${item.poca ? `<span class="item-poca">${item.poca}</span>` : ''}
                             </div>
                         </div>
                         ${totalCount > 0 ? `<div class="item-total-badge">${totalCount}개 선택됨</div>` : ''}
