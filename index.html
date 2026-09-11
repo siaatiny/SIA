@@ -438,7 +438,7 @@
             { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', price: 35000, hasMembers: false, img: 'STRINGBAG.jpg' },
             { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', price: 12000, hasMembers: false, img: 'POUCH.jpg' },
             { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', price: 11000, hasMembers: false, img: 'REUSABLEVBAG.jpg' },
-            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', price: 15000, hasMembers: false, img: 'PHOTOPACK.jpg' }
+            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', price: 15000, hasMembers: true, img: 'PHOTOPACK.jpg' }
         ];
 
         let currentType = 'aniteez';
@@ -492,59 +492,55 @@
             }
         }
 
-        // --- 요청하신 계산 및 특전 집계 함수 ---
-   function getTotalData() {
-    let totalAmount = 0;
-    let totalCnt = 0;
+        function getTotalData() {
+            let totalAmount = 0;
+            let totalCnt = 0;
 
-    currentMdData.forEach(item => {
-        const cnt = getItemTotalCount(item.id);
-        totalCnt += cnt;
-        totalAmount += cnt * item.price;
-    });
+            currentMdData.forEach(item => {
+                const cnt = getItemTotalCount(item.id);
+                totalCnt += cnt;
+                totalAmount += cnt * item.price;
+            });
 
-    let photocardText = '';
-    let reusableBagText = '';
-    let photocardCount = 0;
+            let photocardText = '';
+            let reusableBagText = '';
+            let photocardCount = 0;
 
-    if (currentType === 'aniteez') {
-        // --- 애니티즈 특전 로직 수정 ---
-        const benefit5 = Math.floor(totalAmount / 50000);
-        const benefit10 = Math.floor(totalAmount / 100000);
+            if (currentType === 'aniteez') {
+                const benefit5 = Math.floor(totalAmount / 50000);
+                const benefit10 = Math.floor(totalAmount / 100000);
 
-        // 5만 원 이상 구매 시
-        if (benefit5 > 0) {
-            photocardText = `🎁 5만원 이상 특전: 총 ${benefit5}장 증정! (8종 중 랜덤)`;
-        } else {
-            photocardText = `🎁 (5만원 이상 구매 시 5만원 특전 증정)`;
+                if (benefit5 > 0) {
+                    photocardText = `🎁 5만원 이상 특전: 총 ${benefit5}장 증정! (8종 중 랜덤)`;
+                } else {
+                    photocardText = `🎁 (5만원 이상 구매 시 5만원 특전 증정)`;
+                }
+
+                if (benefit10 > 0) {
+                    reusableBagText = `⭐ 10만원 이상 추가 특전: 총 ${benefit10}장 추가 증정!`;
+                } else {
+                    reusableBagText = `⭐ (10만원 이상 구매 시 10만원 추가 특전 증정)`;
+                }
+
+            } else {
+                photocardCount = Math.floor(totalAmount / 50000);
+
+                if (photocardCount > 0) {
+                    photocardText = `🎁 특전 포토카드: 총 ${photocardCount}장 증정! (8종 중 랜덤)`;
+                } else {
+                    photocardText = `🎁 (50,000원 이상 구매 시 8종 중 1종 랜덤 증정)`;
+                }
+
+                if (totalAmount >= 50000) {
+                    reusableBagText = `🛍️ 리유저블 백(4,000원) 구매 가능!`;
+                } else {
+                    reusableBagText = `🛍️ (50,000원 이상 구매 시 리유저블 백 구매 가능)`;
+                }
+            }
+
+            return { totalAmount, totalCnt, photocardText, reusableBagText, photocardCount };
         }
 
-        // 10만 원 이상 구매 시
-        if (benefit10 > 0) {
-            reusableBagText = `⭐ 10만원 이상 추가 특전: 총 ${benefit10}장 추가 증정!`;
-        } else {
-            reusableBagText = `⭐ (10만원 이상 구매 시 10만원 추가 특전 증정)`;
-        }
-
-    } else {
-        // --- 마이티즈 특전 로직 ---
-        photocardCount = Math.floor(totalAmount / 50000);
-
-        if (photocardCount > 0) {
-            photocardText = `🎁 특전 포토카드: 총 ${photocardCount}장 증정! (8종 중 랜덤)`;
-        } else {
-            photocardText = `🎁 (50,000원 이상 구매 시 8종 중 1종 랜덤 증정)`;
-        }
-
-        if (totalAmount >= 50000) {
-            reusableBagText = `🛍️ 리유저블 백(4,000원) 구매 가능!`;
-        } else {
-            reusableBagText = `🛍️ (50,000원 이상 구매 시 리유저블 백 구매 가능)`;
-        }
-    }
-
-    return { totalAmount, totalCnt, photocardText, reusableBagText, photocardCount };
-}
         function render() {
             const container = document.getElementById('itemList');
             container.innerHTML = '';
@@ -695,12 +691,10 @@
                 modalBody.innerHTML = '<div class="summary-empty">선택된 상품이 없습니다.<br>수량을 선택하신 후 확인해 주세요!</div>';
             }
 
-            // getTotalData()로 집계 데이터 동기화
             const data = getTotalData();
             document.getElementById('modalTotalPrice').innerText = data.totalAmount.toLocaleString() + '원';
             document.getElementById('modalTotalCount').innerText = `총 ${data.totalCnt}개 선택`;
 
-            // 특전 텍스트 업데이트
             document.getElementById('photocardBenefitText').innerText = data.photocardText;
             document.getElementById('reusableBagText').innerText = data.reusableBagText;
 
@@ -746,50 +740,31 @@
                 }
             });
 
-            text += "\n총 수량: " + data.totalCnt + "개\n총 금액: " + data.totalAmount.toLocaleString() + "원\n";
+            text += "\n총 " + data.totalCnt + "개 / " + data.totalAmount.toLocaleString() + "원\n";
             text += data.photocardText + "\n" + data.reusableBagText;
 
             navigator.clipboard.writeText(text).then(() => {
-                showToast("구매 내역이 복사되었습니다!");
+                showToast("내역이 복사되었습니다!");
             }).catch(() => {
                 showToast("복사에 실패했습니다.");
             });
         }
 
-        function saveAsImage() {
-            const data = getTotalData();
-            if (data.totalCnt === 0) {
-                showToast("선택된 상품이 없습니다.");
-                return;
-            }
-
-            const captureArea = document.getElementById('modalCaptureArea');
-            showToast("이미지를 생성하는 중입니다...");
-
-            html2canvas(captureArea, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: "#ffffff"
-            }).then(canvas => {
-                const image = canvas.toDataURL("image/png");
-                const link = document.createElement("a");
-                link.href = image;
-                link.download = `${currentType === 'aniteez' ? 'ANITEEZ' : 'MIGHTEEZ'}_MD_구매내역.png`;
-                link.click();
-                showToast("이미지가 저장되었습니다!");
-            }).catch(err => {
-                console.error(err);
-                showToast("이미지 저장에 실패했습니다.");
-            });
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2000);
+        function saveAsImage() {
+            const captureArea = document.getElementById('modalCaptureArea');
+            html2canvas(captureArea, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `ATEEZ_MD_List_${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
         }
     </script>
 </body>
