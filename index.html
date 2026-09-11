@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>애니티즈 MD 구매 계산기</title>
+    <title>ATEEZ MD 구매 계산기</title>
     <!-- 이미지 저장용 html2canvas 라이브러리 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -15,7 +15,12 @@
             --text: #2d3436;
             --text-sub: #636e72;
             --border: #edf2f7;
-            --accent: #fd79a8;
+        }
+
+        /* 마이티즈용 테마 */
+        .theme-mighteez {
+            --primary: #ff4757;
+            --primary-light: #ff6b81;
         }
 
         * {
@@ -32,17 +37,128 @@
             padding-bottom: 120px;
         }
 
-        header {
+        /* ---------------- 홈 선택 화면 ---------------- */
+        #homeScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        }
+
+        .home-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #2d3436;
+            text-align: center;
+        }
+
+        .home-subtitle {
+            font-size: 0.95rem;
+            color: #636e72;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .select-card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .select-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .select-card:active {
+            transform: scale(0.98);
+        }
+
+        .select-card.aniteez {
+            border-color: #6c5ce7;
+        }
+
+        .select-card.aniteez .card-btn {
             background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        }
+
+        .select-card.mighteez {
+            border-color: #ff4757;
+        }
+
+        .select-card.mighteez .card-btn {
+            background: linear-gradient(135deg, #ff4757, #ff6b81);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .select-card.aniteez .card-title { color: #6c5ce7; }
+        .select-card.mighteez .card-title { color: #ff4757; }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: #636e72;
+            margin-bottom: 16px;
+        }
+
+        .card-btn {
             color: white;
-            padding: 24px 20px 20px 20px;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        /* ---------------- 계산기 공통 화면 ---------------- */
+        #calcScreen {
+            display: none;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 20px;
             text-align: center;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .btn-home {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         header h1 {
@@ -67,11 +183,6 @@
             font-weight: 600;
             cursor: pointer;
             backdrop-filter: blur(4px);
-            transition: all 0.2s ease;
-        }
-
-        .btn-view-summary:active {
-            background: rgba(255, 255, 255, 0.4);
         }
 
         .container {
@@ -92,7 +203,11 @@
 
         .item-card.has-selection {
             border-color: var(--primary);
-            background-color: #fbfaff;
+            background-color: #fcfbff;
+        }
+
+        body.theme-mighteez .item-card.has-selection {
+            background-color: #fff0f1;
         }
 
         .item-header {
@@ -133,9 +248,13 @@
             font-size: 0.85rem;
             font-weight: 700;
             color: var(--primary);
-            background: #eeeaff;
+            background: #f0edff;
             padding: 4px 8px;
             border-radius: 8px;
+        }
+
+        body.theme-mighteez .item-total-badge {
+            background: #ffe0e3;
         }
 
         .member-grid {
@@ -158,6 +277,10 @@
         .member-box.active {
             background: #f0edff;
             border-color: var(--primary-light);
+        }
+
+        body.theme-mighteez .member-box.active {
+            background: #ffe8ea;
         }
 
         .member-name {
@@ -297,20 +420,24 @@
         }
 
         .btn-summary {
-            background: #eeeaff;
+            background: #f0edff;
             color: var(--primary);
+        }
+
+        body.theme-mighteez .btn-summary {
+            background: #ffe0e3;
         }
 
         .btn-copy {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .btn-save {
-            background: #00b894;
+            background: #2ed573;
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 184, 148, 0.3);
+            box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3);
         }
 
         /* Modal Styles */
@@ -425,6 +552,10 @@
             border-radius: 12px;
         }
 
+        body.theme-mighteez .modal-total-box {
+            background: #ffe0e3;
+        }
+
         .modal-total-label {
             font-size: 0.9rem;
             font-weight: 700;
@@ -460,24 +591,50 @@
 </head>
 <body>
 
-    <header>
-        <h1>애니티즈 MD 구매 계산기</h1>
-        <p>멤버별/단품별 수량을 선택하면 총금액이 자동 계산됩니다</p>
-        <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
-    </header>
-
-    <div class="container" id="itemList"></div>
-
-    <div class="bottom-bar">
-        <div class="bottom-content">
-            <div class="total-container">
-                <span class="total-label" id="totalCount">총 0개 선택</span>
-                <span class="total-amount" id="totalPrice">0원</span>
+    <!-- 홈 (선택) 화면 -->
+    <div id="homeScreen">
+        <h1 class="home-title">ATEEZ MD 구매 계산기</h1>
+        <p class="home-subtitle">계산하시려는 팝업스토어를 선택해주세요!</p>
+        
+        <div class="select-card-container">
+            <div class="select-card aniteez" onclick="selectType('aniteez')">
+                <div class="card-title">✨ 애니티즈 (ANITEEZ)</div>
+                <div class="card-desc">애니티즈 MD 구매 목록 및 수량 계산기</div>
+                <div class="card-btn">애니티즈 계산기 열기</div>
             </div>
-            <div class="btn-group">
-                <button class="btn btn-reset" onclick="resetAll()">초기화</button>
-                <button class="btn btn-summary" onclick="openModal()">내역 보기</button>
-                <button class="btn btn-copy" onclick="copySummary()">복사</button>
+
+            <div class="select-card mighteez" onclick="selectType('mighteez')">
+                <div class="card-title">🔥 마이티즈 (MIGHTEEZ)</div>
+                <div class="card-desc">Rock The Stage Pop-up MD 계산기</div>
+                <div class="card-btn">마이티즈 계산기 열기</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 계산기 메인 화면 -->
+    <div id="calcScreen">
+        <header>
+            <div class="header-top">
+                <button class="btn-home" onclick="goHome()">🏠 메인으로</button>
+            </div>
+            <h1 id="calcTitle">MD 구매 계산기</h1>
+            <p>멤버별/단품별 수량을 선택하면 총금액이 자동 계산됩니다</p>
+            <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
+        </header>
+
+        <div class="container" id="itemList"></div>
+
+        <div class="bottom-bar">
+            <div class="bottom-content">
+                <div class="total-container">
+                    <span class="total-label" id="totalCount">총 0개 선택</span>
+                    <span class="total-amount" id="totalPrice">0원</span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-reset" onclick="resetAll()">초기화</button>
+                    <button class="btn btn-summary" onclick="openModal()">내역 보기</button>
+                    <button class="btn btn-copy" onclick="copySummary()">복사</button>
+                </div>
             </div>
         </div>
     </div>
@@ -489,9 +646,7 @@
                 <div class="modal-title">📋 나의 MD 구매 내역</div>
                 <button class="modal-close" onclick="closeModal()">&times;</button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- 내역이 동적으로 생성됩니다 -->
-            </div>
+            <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
                 <div class="modal-total-box">
                     <span class="modal-total-label" id="modalTotalCount">총 0개 선택</span>
@@ -511,33 +666,78 @@
     <script>
         const members = ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'];
 
-        const mdData = [
-            { id: 0, name: '타이니 애니티즈 미니 인형', limit: '종류무관 1인 최대1개', price: 16000, hasMembers: true },
-            { id: 1, name: '실버 애니티즈 인형 키링', limit: '종류무관 1인 최대1개', price: 28000, hasMembers: true },
-            { id: 2, name: '별의 애니티즈 키링', limit: '종류무관 1인 최대1개', price: 24000, hasMembers: true },
-            { id: 3, name: '응원봉 커버', limit: '종류무관 1인 최대1개', price: 24000, hasMembers: true },
-            { id: 4, name: '타이니 응원봉 스크런치', limit: '종류무관 1인 최대1개', price: 20000, hasMembers: true },
-            { id: 5, name: '벽걸이 수납 포켓', limit: '종류무관 1인 최대2개', price: 28000, hasMembers: true },
-            { id: 6, name: '타이니 러그', limit: '종류무관 1인 최대1개', price: 30000, hasMembers: true },
-            { id: 7, name: '별빛유리 텀블러', limit: '1인 최대2개', price: 15000, hasMembers: false },
-            { id: 8, name: '반팔 티셔츠', limit: '사이즈 관계 없이 1인 최대2개', price: 39000, hasMembers: false },
-            { id: 9, name: '인형 볼펜', limit: '종류무관 1인 최대1개', price: 18000, hasMembers: true },
-            { id: 10, name: '인덱스 점착메모세트', limit: '1인 최대2개', price: 9000, hasMembers: false },
-            { id: 11, name: '워터 입체스티커', limit: '1인 최대2개', price: 12000, hasMembers: false },
-            { id: 12, name: '포토카드 바인더', limit: '종류무관 1인 최대2개', price: 15000, hasMembers: true },
-            { id: 13, name: '트레카', limit: '1인 최대 20개', price: 5000, hasMembers: false },
-            { id: 14, name: '아크릴 쉐이커 마그네틱 스마트톡', limit: '1인 최대2개', price: 16000, hasMembers: false },
-            { id: 15, name: '아크릴 마그넷 증명사진 홀더', limit: '종류무관 1인 최대2개', price: 16000, hasMembers: true },
-            { id: 16, name: '캔오프너 키링', limit: '종류무관 1인 최대2개', price: 16000, hasMembers: true },
-            { id: 17, name: '랜덤 미니어쳐 키링', limit: '1인 최대 8개', price: 8000, hasMembers: false },
-            { id: 18, name: '타이니 무드등', limit: '예약판매', price: 38000, hasMembers: true },
+        const dataAniteez = [
+            { id: 0, name: '타이니애니티즈미니인형', limit: '종류무관 1개', price: 16000, hasMembers: true },
+            { id: 1, name: '실버애니티즈인형키링', limit: '종류무관 1개', price: 28000, hasMembers: true },
+            { id: 2, name: '별의애니티즈키링', limit: '종류무관 1개', price: 24000, hasMembers: true },
+            { id: 3, name: '응원봉커버', limit: '종류무관 1개', price: 24000, hasMembers: true },
+            { id: 4, name: '타이니응원봉스크런치', limit: '종류무관 1개', price: 20000, hasMembers: true },
+            { id: 5, name: '벽걸이수납포켓', limit: '종류무관 2개', price: 28000, hasMembers: true },
+            { id: 6, name: '타이니러그', limit: '종류무관 1개', price: 30000, hasMembers: true },
+            { id: 7, name: '별빛유리텀블러', limit: '종류무관 2개', price: 15000, hasMembers: false },
+            { id: 8, name: '반팔티셔츠', limit: '종류무관 2개', price: 39000, hasMembers: false },
+            { id: 9, name: '인형볼펜', limit: '종류무관 1개', price: 18000, hasMembers: true },
+            { id: 10, name: '인덱스점착메모세트', limit: '종류무관 2개', price: 9000, hasMembers: false },
+            { id: 11, name: '워터입체스티커', limit: '종류무관 2개', price: 12000, hasMembers: false },
+            { id: 12, name: '포토카드바인더', limit: '종류무관 2개', price: 15000, hasMembers: true },
+            { id: 13, name: '트레카', limit: '최대 20개', price: 5000, hasMembers: false },
+            { id: 14, name: '아크릴쉐이커마그네틱스마트톡', limit: '종류무관 2개', price: 16000, hasMembers: false },
+            { id: 15, name: '아크릴마그넷증명사진홀더', limit: '종류무관 2개', price: 16000, hasMembers: true },
+            { id: 16, name: '캔오프너키링', limit: '종류무관 2개', price: 16000, hasMembers: true },
+            { id: 17, name: '랜덤미니어쳐키링', limit: '', price: 8000, hasMembers: false },
+            { id: 18, name: '타이니무드등', limit: '예약판매', price: 38000, hasMembers: true },
             { id: 19, name: '롱바디필로우', limit: '예약판매', price: 49000, hasMembers: true }
         ];
 
+        const dataMighteez = [
+            { id: 0, name: '플러시 키링 - 팝!스타', limit: '1인당 제품별 3개', price: 22000, hasMembers: true },
+            { id: 1, name: '플러시 키링 - 락스타', limit: '1인당 제품별 3개', price: 23000, hasMembers: true },
+            { id: 2, name: '플러시백', limit: '1인당 제품별 3개', price: 42000, hasMembers: true },
+            { id: 3, name: '여권 케이스', limit: '1인당 제품별 3개', price: 23000, hasMembers: true },
+            { id: 4, name: '플러시 참', limit: '1인당 제품별 3개', price: 18000, hasMembers: true },
+            { id: 5, name: '플러시 줄자', limit: '1인당 제품별 3개', price: 16000, hasMembers: true },
+            { id: 6, name: '랜덤 트레카', limit: '1인당 제품별 8개', price: 5000, hasMembers: false },
+            { id: 7, name: '후드집업', limit: '1인당 제품별 3개', price: 79000, hasMembers: false },
+            { id: 8, name: '반팔 티셔츠', limit: '1인당 제품별 3개', price: 39000, hasMembers: false },
+            { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', price: 35000, hasMembers: false },
+            { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', price: 12000, hasMembers: false },
+            { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', price: 11000, hasMembers: false },
+            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', price: 15000, hasMembers: false },
+            { id: 13, name: '매칭포카', limit: '', price: 0, hasMembers: true },
+            { id: 14, name: '랜덤포카', limit: '', price: 0, hasMembers: false }
+        ];
+
+        let currentType = 'aniteez';
+        let currentMdData = [];
         const state = {};
 
+        function selectType(type) {
+            currentType = type;
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('calcScreen').style.display = 'block';
+
+            if (type === 'aniteez') {
+                document.body.classList.remove('theme-mighteez');
+                document.getElementById('calcTitle').innerText = '애니티즈 MD 구매 계산기';
+                currentMdData = dataAniteez;
+            } else {
+                document.body.classList.add('theme-mighteez');
+                document.getElementById('calcTitle').innerText = '마이티즈 팝업 MD 계산기';
+                currentMdData = dataMighteez;
+            }
+
+            initData();
+            render();
+            window.scrollTo(0, 0);
+        }
+
+        function goHome() {
+            document.getElementById('calcScreen').style.display = 'none';
+            document.getElementById('homeScreen').style.display = 'flex';
+        }
+
         function initData() {
-            mdData.forEach(item => {
+            currentMdData.forEach(item => {
                 state[item.id] = {};
                 if (item.hasMembers) {
                     members.forEach((_, mIdx) => state[item.id][mIdx] = 0);
@@ -548,7 +748,7 @@
         }
 
         function getItemTotalCount(itemId) {
-            const item = mdData.find(i => i.id === itemId);
+            const item = currentMdData.find(i => i.id === itemId);
             if (!item) return 0;
             if (item.hasMembers) {
                 return members.reduce((sum, _, mIdx) => sum + (state[itemId][mIdx] || 0), 0);
@@ -561,7 +761,7 @@
             const container = document.getElementById('itemList');
             container.innerHTML = '';
 
-            mdData.forEach(item => {
+            currentMdData.forEach(item => {
                 const totalCount = getItemTotalCount(item.id);
                 const card = document.createElement('div');
                 card.className = 'item-card' + (totalCount > 0 ? ' has-selection' : '');
@@ -599,12 +799,14 @@
                     `;
                 }
 
+                const priceText = item.price > 0 ? `${item.price.toLocaleString()}원` : '비매품/특전';
+
                 card.innerHTML = `
                     <div class="item-header">
                         <div>
                             <div class="item-name">${item.name}</div>
                             <div class="item-meta">
-                                <span class="item-price">${item.price.toLocaleString()}원</span>
+                                <span class="item-price">${priceText}</span>
                                 ${item.limit ? `<span class="item-limit">${item.limit}</span>` : ''}
                             </div>
                         </div>
@@ -639,7 +841,7 @@
             let totalAmount = 0;
             let totalCnt = 0;
 
-            mdData.forEach(item => {
+            currentMdData.forEach(item => {
                 const cnt = getItemTotalCount(item.id);
                 totalCnt += cnt;
                 totalAmount += cnt * item.price;
@@ -663,7 +865,7 @@
             let totalCnt = 0;
             let hasSelection = false;
 
-            mdData.forEach(item => {
+            currentMdData.forEach(item => {
                 const cnt = getItemTotalCount(item.id);
                 if (cnt > 0) {
                     hasSelection = true;
@@ -687,11 +889,13 @@
                         detailsStr = `수량: ${cnt}개`;
                     }
 
+                    const priceDisplay = item.price > 0 ? `${itemTotal.toLocaleString()}원` : '특전/포카';
+
                     summaryItem.innerHTML = `
                         <div class="summary-item-title">${item.name}</div>
                         <div class="summary-item-details">
                             <span>${detailsStr}</span>
-                            <span style="font-weight:700; color:var(--primary);">${itemTotal.toLocaleString()}원</span>
+                            <span style="font-weight:700; color:var(--primary);">${priceDisplay}</span>
                         </div>
                     `;
                     modalBody.appendChild(summaryItem);
@@ -713,11 +917,12 @@
         }
 
         function copySummary() {
-            let text = "[애니티즈 MD 구매 목록]\n";
+            const titleStr = currentType === 'aniteez' ? '[애니티즈 MD 구매 목록]' : '[마이티즈 팝업 MD 구매 목록]';
+            let text = titleStr + "\n";
             let totalAmount = 0;
             let totalCnt = 0;
 
-            mdData.forEach(item => {
+            currentMdData.forEach(item => {
                 const cnt = getItemTotalCount(item.id);
                 if (cnt > 0) {
                     const itemTotal = cnt * item.price;
@@ -754,7 +959,7 @@
 
         function saveAsImage() {
             let totalCnt = 0;
-            mdData.forEach(item => totalCnt += getItemTotalCount(item.id));
+            currentMdData.forEach(item => totalCnt += getItemTotalCount(item.id));
 
             if (totalCnt === 0) {
                 showToast("선택된 상품이 없습니다.");
@@ -766,7 +971,6 @@
             const target = document.getElementById('modalCaptureArea');
             const modalBody = document.getElementById('modalBody');
 
-            // 이미지 저장 시 전체 목록이 잘리지 않도록 높이/스크롤 제한을 임시 해제
             const origMaxHeight = target.style.maxHeight;
             const origBodyMaxHeight = modalBody.style.maxHeight;
             const origBodyOverflow = modalBody.style.overflow;
@@ -775,6 +979,8 @@
             modalBody.style.maxHeight = 'none';
             modalBody.style.overflow = 'visible';
 
+            const filename = currentType === 'aniteez' ? '애니티즈_MD_구매내역.png' : '마이티즈_MD_구매내역.png';
+
             html2canvas(target, {
                 scale: 2,
                 backgroundColor: "#ffffff",
@@ -782,14 +988,13 @@
                 windowHeight: target.scrollHeight
             }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = '애니티즈_MD_구매내역.png';
+                link.download = filename;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 showToast("이미지가 저장되었습니다!");
             }).catch(err => {
                 showToast("이미지 저장에 실패했습니다.");
             }).finally(() => {
-                // 원래 모달 스타일로 복원
                 target.style.maxHeight = origMaxHeight;
                 modalBody.style.maxHeight = origBodyMaxHeight;
                 modalBody.style.overflow = origBodyOverflow;
@@ -804,9 +1009,6 @@
                 toast.classList.remove('show');
             }, 2000);
         }
-
-        initData();
-        render();
     </script>
 </body>
 </html>
