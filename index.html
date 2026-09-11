@@ -616,7 +616,7 @@
 
             <div class="select-card mighteez" onclick="selectType('mighteez')">
                 <div class="card-title">🔥 마이티즈 (MIGHTEEZ)</div>
-                <div class="card-desc">Rock The Stage Pop-up MD 계산기</div>
+                <div class="card-desc">마이티즈 MD 구매 목록 및 수량 계산기</div>
                 <div class="card-btn">마이티즈 계산기 열기</div>
             </div>
         </div>
@@ -629,7 +629,7 @@
                 <button class="btn-home" onclick="goHome()">🏠 메인으로</button>
             </div>
             <h1 id="calcTitle">MD 구매 계산기</h1>
-            <p>멤버별/단품별 수량을 선택하면 총금액이 자동 계산됩니다</p>
+            <p>멤버별/단품별 수량을 선택하면 총금액이 자동 계산됩니다.</p>
             <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
         </header>
 
@@ -707,15 +707,15 @@
             { id: 1, name: '플러시 키링 - 락스타', limit: '1인당 제품별 3개', poca: '포카 O', price: 23000, hasMembers: true },
             { id: 2, name: '플러시백', limit: '1인당 제품별 3개', poca: '포카 O', price: 42000, hasMembers: true },
             { id: 3, name: '여권 케이스', limit: '1인당 제품별 3개', poca: '포카 O', price: 23000, hasMembers: true },
-            { id: 4, name: '플러시 참', limit: '1인당 제품별 3개', poca: '포카 O', price: 18000, hasMembers: true },
-            { id: 5, name: '플러시 줄자', limit: '1인당 제품별 3개', poca: '포카 O', price: 16000, hasMembers: true },
-            { id: 6, name: '랜덤 트레카', limit: '1인당 제품별 8개', poca: '포카 O', price: 5000, hasMembers: false },
-            { id: 7, name: '후드집업', limit: '1인당 제품별 3개', poca: '포카 O', price: 79000, hasMembers: false },
-            { id: 8, name: '반팔 티셔츠', limit: '1인당 제품별 3개', poca: '포카 O', price: 39000, hasMembers: false },
-            { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', poca: '포카 O', price: 35000, hasMembers: false },
-            { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', poca: '포카 O', price: 12000, hasMembers: false },
-            { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', poca: '포카 O', price: 11000, hasMembers: false },
-            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', poca: '포카 O', price: 15000, hasMembers: false }
+            { id: 4, name: '플러시 참', limit: '1인당 제품별 3개', poca: '포카 X', price: 18000, hasMembers: true },
+            { id: 5, name: '플러시 줄자', limit: '1인당 제품별 3개', poca: '포카 X', price: 16000, hasMembers: true },
+            { id: 6, name: '랜덤 트레카', limit: '1인당 제품별 8개', price: 5000, hasMembers: false },
+            { id: 7, name: '후드집업', limit: '1인당 제품별 3개', poca: '포카 X', price: 79000, hasMembers: false },
+            { id: 8, name: '반팔 티셔츠', limit: '1인당 제품별 3개', poca: '포카 X', price: 39000, hasMembers: false },
+            { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', poca: '포카 X', price: 35000, hasMembers: false },
+            { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', poca: '포카 X', price: 12000, hasMembers: false },
+            { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', poca: '포카 X', price: 11000, hasMembers: false },
+            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', poca: '포카 X', price: 15000, hasMembers: false }
         ];
 
         let currentType = 'aniteez';
