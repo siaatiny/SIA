@@ -627,11 +627,10 @@
 
             // 특전 계산 로직
             let photocardCount = Math.floor(totalAmount / 50000);
-            if (photocardCount > 8) photocardCount = 8;
 
             let photocardText = '';
             if (photocardCount > 0) {
-                photocardText = `🎁 특전 포토카드 8장 중 ${photocardCount}종 증정!`;
+                photocardText = `🎁 특전 포토카드: 총 ${photocardCount}장 증정!`;
             } else {
                 photocardText = `🎁 (50,000원 이상 구매 시 특전 포토카드 증정)`;
             }
@@ -747,69 +746,38 @@
                                 mDetails.push(mName + ":" + state[item.id][mIdx]);
                             }
                         });
-                        text += "- " + item.name + " (" + mDetails.join(", ") + ") : 총 " + cnt + "개 (" + itemTotal.toLocaleString() + "원)\n";
+                        text += `- ${item.name} (${mDetails.join(', ')}) : ${itemTotal.toLocaleString()}원\n`;
                     } else {
-                        text += "- " + item.name + " x " + cnt + "개 (" + itemTotal.toLocaleString() + "원)\n";
+                        text += `- ${item.name} ${cnt}개 : ${itemTotal.toLocaleString()}원\n`;
                     }
                 }
             });
 
-            text += "\n총 수량: " + totalCnt + "개\n총 금액: " + totalAmount.toLocaleString() + "원\n";
-            text += "\n[특전 안내]\n" + photocardText + "\n" + reusableBagText;
+            text += `\n총 ${totalCnt}개 / ${totalAmount.toLocaleString()}원\n`;
+            text += `${photocardText}\n${reusableBagText}`;
 
             navigator.clipboard.writeText(text).then(() => {
-                showToast("구매 내역이 복사되었습니다!");
+                showToast("구매 내역이 클립보드에 복사되었습니다!");
             }).catch(() => {
-                showToast("복사에 실패했습니다.");
+                showToast("복사 중 오류가 발생했습니다.");
             });
         }
 
         function saveAsImage() {
-            const { totalCnt } = getTotalData();
+            const area = document.getElementById('modalCaptureArea');
+            if (!area) return;
 
-            if (totalCnt === 0) {
-                showToast("선택된 상품이 없습니다.");
-                return;
-            }
-
-            showToast("이미지 생성 중입니다...");
-
-            const target = document.getElementById('modalCaptureArea');
-            const modalBody = document.getElementById('modalBody');
-
-            const origMaxHeight = target.style.maxHeight;
-            const origBodyMaxHeight = modalBody.style.maxHeight;
-            const origBodyOverflow = modalBody.style.overflow;
-
-            target.style.maxHeight = 'none';
-            modalBody.style.maxHeight = 'none';
-            modalBody.style.overflow = 'visible';
-
-            const filename = currentType === 'aniteez' ? '애니티즈_MD_구매내역.png' : '마이티즈_MD_구매내역.png';
-
-            html2canvas(target, {
-                scale: 2,
-                backgroundColor: "#ffffff",
-                useCORS: true,
-                windowHeight: target.scrollHeight
-            }).then(canvas => {
+            html2canvas(area, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = filename;
+                link.download = `${currentType}_구매내역.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                showToast("이미지가 저장되었습니다!");
-            }).catch(err => {
-                showToast("이미지 저장에 실패했습니다.");
-            }).finally(() => {
-                target.style.maxHeight = origMaxHeight;
-                modalBody.style.maxHeight = origBodyMaxHeight;
-                modalBody.style.overflow = origBodyOverflow;
             });
         }
 
-        function showToast(msg) {
+        function showToast(message) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
+            toast.innerText = message;
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
