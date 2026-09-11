@@ -318,7 +318,7 @@
                 <button class="btn-home" onclick="goHome()">🏠 메인으로</button>
             </div>
             <h1 id="calcTitle">MD 구매 계산기</h1>
-            <p>아래 구매 내역에서 총 금액을 확인할 수 있습니다! </p>
+            <p>아래 구매 내역에서 총 금액을 확인할 수 있습니다!</p>
             <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
         </header>
 
@@ -340,7 +340,7 @@
     </div>
 
     <!-- 구매 내역 모달 팝업 -->
-    <div class="modal-overlay" id="summaryModal">
+    <div class="modal-overlay" id="summaryModal" onclick="closeModalOnOverlay(event)">
         <div class="modal-container" id="modalCaptureArea">
             <div class="modal-header">
                 <div class="modal-title">📋 나의 MD 구매 내역</div>
@@ -397,10 +397,9 @@
             { id: 19, name: '롱 바디필로우', limit: '예약판매', price: 49000, hasMembers: true }
         ];
 
-        // img 속성에 준비한 이미지 파일명을 넣어주시면 됩니다.
         const dataMighteez = [
             { id: 0, name: '플러시 키링 - 팝!스타', limit: '1인당 제품별 3개', price: 22000, hasMembers: true, img: 'POPSTAR.jpg' },
-            { id: 1, name: '플러시 키링 - 락스타', limit: '1인당 제품별 3개', price: 23000, hasMembers: true, img: 'ROCKSTAR.jpg' },
+            { id: 1, name: '플러시 키링 - 락⭐스타', limit: '1인당 제품별 3개', price: 23000, hasMembers: true, img: 'ROCKSTAR.jpg' },
             { id: 2, name: '플러시백', limit: '1인당 제품별 3개', price: 42000, hasMembers: true, img: 'PLUSHBAG.jpg' },
             { id: 3, name: '여권 케이스', limit: '1인당 제품별 3개', price: 23000, hasMembers: true, img: 'PASSPORTCASE.jpg' },
             { id: 4, name: '플러시 참', limit: '1인당 제품별 3개', price: 18000, hasMembers: true, img: 'PLUSHCHARM.jpg' },
@@ -411,12 +410,12 @@
             { id: 9, name: '스트링 백', limit: '1인당 제품별 3개', price: 35000, hasMembers: false, img: 'STRINGBAG.jpg' },
             { id: 10, name: '스트링 파우치', limit: '1인당 제품별 3개', price: 12000, hasMembers: false, img: 'POUCH.jpg' },
             { id: 11, name: '리유저블 백', limit: '1인당 제품별 3개', price: 11000, hasMembers: false, img: 'REUSABLEVBAG.jpg' },
-            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', price: 15000, hasMembers: false, img: 'PHOTOPACK.jpg' },
+            { id: 12, name: '포토팩', limit: '1인당 제품별 3개', price: 15000, hasMembers: false, img: 'PHOTOPACK.jpg' }
         ];
 
         let currentType = 'aniteez';
         let currentMdData = [];
-        const state = {};
+        let state = {};
 
         function selectType(type) {
             currentType = type;
@@ -444,6 +443,7 @@
         }
 
         function initData() {
+            state = {};
             currentMdData.forEach(item => {
                 state[item.id] = {};
                 if (item.hasMembers) {
@@ -456,7 +456,7 @@
 
         function getItemTotalCount(itemId) {
             const item = currentMdData.find(i => i.id === itemId);
-            if (!item) return 0;
+            if (!item || !state[itemId]) return 0;
             if (item.hasMembers) {
                 return members.reduce((sum, _, mIdx) => sum + (state[itemId][mIdx] || 0), 0);
             } else {
@@ -634,6 +634,12 @@
 
         function closeModal() {
             document.getElementById('summaryModal').classList.remove('active');
+        }
+
+        function closeModalOnOverlay(e) {
+            if (e.target.id === 'summaryModal') {
+                closeModal();
+            }
         }
 
         function copySummary() {
