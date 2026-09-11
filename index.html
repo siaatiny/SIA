@@ -275,6 +275,21 @@
         .summary-item-details { font-size: 0.85rem; color: var(--text-sub); display: flex; justify-content: space-between; }
         .summary-empty { text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 0.95rem; }
         .modal-footer { padding: 16px 20px; background: #f8f9fa; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+        
+        /* 특전 안내 박스 스타일 */
+        .benefit-box {
+            background: #fff8e7;
+            border: 1px solid #ffeaa7;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.83rem;
+            color: #d63031;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-weight: 600;
+        }
+
         .modal-total-box { display: flex; justify-content: space-between; align-items: center; background: #f0edff; padding: 12px 16px; border-radius: 12px; }
         body.theme-mighteez .modal-total-box { background: #ffe0e3; }
         .modal-total-label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
@@ -348,6 +363,12 @@
             </div>
             <div class="modal-body" id="modalBody"></div>
             <div class="modal-footer">
+                <!-- 특전 안내 박스 -->
+                <div class="benefit-box" id="benefitBox">
+                    <div id="photocardText">🎁 특전 포토카드: -</div>
+                    <div id="reusableBagText">🛍️ 리유저블 백: -</div>
+                </div>
+
                 <div class="modal-total-box">
                     <span class="modal-total-label" id="modalTotalCount">총 0개 선택</span>
                     <span class="modal-total-val" id="modalTotalPrice">0원</span>
@@ -541,23 +562,60 @@
             document.getElementById('imageModal').classList.remove('active');
         }
 
+        function getMaxLimit(item) {
+            if (!item.limit) return Infinity;
+            const match = item.limit.match(/\d+/);
+            if (!match) return Infinity;
+            return parseInt(match[0], 10);
+        }
+
         function changeMemberQty(itemId, memberIdx, change) {
-            const nextVal = (state[itemId][memberIdx] || 0) + change;
-            if (nextVal >= 0) {
-                state[itemId][memberIdx] = nextVal;
-                render();
+            const item = currentMdData.find(i => i.id === itemId);
+            const currentVal = state[itemId][memberIdx] || 0;
+            const nextVal = currentVal + change;
+
+            if (nextVal < 0) return;
+
+            if (change > 0) {
+                const maxLimit = getMaxLimit(item);
+                if (currentType === 'aniteez') {
+                    const currentTotal = getItemTotalCount(itemId);
+                    if (currentTotal + change > maxLimit) {
+                        showToast(`이 상품은 최대 ${maxLimit}개까지 구매 가능합니다.`);
+                        return;
+                    }
+                } else {
+                    if (nextVal > maxLimit) {
+                        showToast(`옵션당 최대 ${maxLimit}개까지 구매 가능합니다.`);
+                        return;
+                    }
+                }
             }
+
+            state[itemId][memberIdx] = nextVal;
+            render();
         }
 
         function changeSimpleQty(itemId, change) {
-            const nextVal = (state[itemId]['simple'] || 0) + change;
-            if (nextVal >= 0) {
-                state[itemId]['simple'] = nextVal;
-                render();
+            const item = currentMdData.find(i => i.id === itemId);
+            const currentVal = state[itemId]['simple'] || 0;
+            const nextVal = currentVal + change;
+
+            if (nextVal < 0) return;
+
+            if (change > 0) {
+                const maxLimit = getMaxLimit(item);
+                if (nextVal > maxLimit) {
+                    showToast(`최대 ${maxLimit}개까지 구매 가능합니다.`);
+                    return;
+                }
             }
+
+            state[itemId]['simple'] = nextVal;
+            render();
         }
 
-        function updateTotal() {
+        function getTotalData() {
             let totalAmount = 0;
             let totalCnt = 0;
 
@@ -567,6 +625,29 @@
                 totalAmount += cnt * item.price;
             });
 
+            // 특전 계산 로직
+            let photocardCount = Math.floor(totalAmount / 50000);
+            if (photocardCount > 8) photocardCount = 8;
+
+            let photocardText = '';
+            if (photocardCount > 0) {
+                photocardText = `🎁 특전 포토카드 8장 중 ${photocardCount}종 증정!`;
+            } else {
+                photocardText = `🎁 (50,000원 이상 구매 시 특전 포토카드 증정)`;
+            }
+
+            let reusableBagText = '';
+            if (totalAmount >= 50000) {
+                reusableBagText = `🛍️ 리유저블 백(4,000원) 구매 가능!`;
+            } else {
+                reusableBagText = `🛍️ (50,000원 이상 구매 시 리유저블 백 구매 가능)`;
+            }
+
+            return { totalAmount, totalCnt, photocardText, reusableBagText, photocardCount };
+        }
+
+        function updateTotal() {
+            const { totalAmount, totalCnt } = getTotalData();
             document.getElementById('totalPrice').innerText = totalAmount.toLocaleString() + '원';
             document.getElementById('totalCount').innerText = `총 ${totalCnt}개 선택`;
         }
@@ -581,8 +662,7 @@
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = '';
 
-            let totalAmount = 0;
-            let totalCnt = 0;
+            const { totalAmount, totalCnt, photocardText, reusableBagText } = getTotalData();
             let hasSelection = false;
 
             currentMdData.forEach(item => {
@@ -590,8 +670,6 @@
                 if (cnt > 0) {
                     hasSelection = true;
                     const itemTotal = cnt * item.price;
-                    totalAmount += itemTotal;
-                    totalCnt += cnt;
 
                     const summaryItem = document.createElement('div');
                     summaryItem.className = 'summary-item';
@@ -626,6 +704,10 @@
                 modalBody.innerHTML = '<div class="summary-empty">선택된 상품이 없습니다.<br>수량을 선택하신 후 확인해 주세요!</div>';
             }
 
+            // 특전 안내 문구 업데이트
+            document.getElementById('photocardText').innerText = photocardText;
+            document.getElementById('reusableBagText').innerText = reusableBagText;
+
             document.getElementById('modalTotalPrice').innerText = totalAmount.toLocaleString() + '원';
             document.getElementById('modalTotalCount').innerText = `총 ${totalCnt}개 선택`;
 
@@ -643,17 +725,20 @@
         }
 
         function copySummary() {
+            const { totalAmount, totalCnt, photocardText, reusableBagText } = getTotalData();
+
+            if (totalCnt === 0) {
+                showToast("선택된 상품이 없습니다.");
+                return;
+            }
+
             const titleStr = currentType === 'aniteez' ? '[애니티즈 MD 구매 목록]' : '[마이티즈 팝업 MD 구매 목록]';
             let text = titleStr + "\n";
-            let totalAmount = 0;
-            let totalCnt = 0;
 
             currentMdData.forEach(item => {
                 const cnt = getItemTotalCount(item.id);
                 if (cnt > 0) {
                     const itemTotal = cnt * item.price;
-                    totalAmount += itemTotal;
-                    totalCnt += cnt;
 
                     if (item.hasMembers) {
                         const mDetails = [];
@@ -669,12 +754,8 @@
                 }
             });
 
-            if (totalCnt === 0) {
-                showToast("선택된 상품이 없습니다.");
-                return;
-            }
-
-            text += "\n총 수량: " + totalCnt + "개\n총 금액: " + totalAmount.toLocaleString() + "원";
+            text += "\n총 수량: " + totalCnt + "개\n총 금액: " + totalAmount.toLocaleString() + "원\n";
+            text += "\n[특전 안내]\n" + photocardText + "\n" + reusableBagText;
 
             navigator.clipboard.writeText(text).then(() => {
                 showToast("구매 내역이 복사되었습니다!");
@@ -684,8 +765,7 @@
         }
 
         function saveAsImage() {
-            let totalCnt = 0;
-            currentMdData.forEach(item => totalCnt += getItemTotalCount(item.id));
+            const { totalCnt } = getTotalData();
 
             if (totalCnt === 0) {
                 showToast("선택된 상품이 없습니다.");
