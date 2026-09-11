@@ -493,57 +493,58 @@
         }
 
         // --- 요청하신 계산 및 특전 집계 함수 ---
-        function getTotalData() {
-            let totalAmount = 0;
-            let totalCnt = 0;
+   function getTotalData() {
+    let totalAmount = 0;
+    let totalCnt = 0;
 
-            currentMdData.forEach(item => {
-                const cnt = getItemTotalCount(item.id);
-                totalCnt += cnt;
-                totalAmount += cnt * item.price;
-            });
+    currentMdData.forEach(item => {
+        const cnt = getItemTotalCount(item.id);
+        totalCnt += cnt;
+        totalAmount += cnt * item.price;
+    });
 
-            let photocardText = '';
-            let reusableBagText = '';
-            let photocardCount = 0;
+    let photocardText = '';
+    let reusableBagText = '';
+    let photocardCount = 0;
 
-            if (currentType === 'aniteez') {
-                // --- 애니티즈 특전 로직 ---
-                const benefit5 = Math.floor(totalAmount / 50000);
-                const benefit10 = Math.floor(totalAmount / 100000);
+    if (currentType === 'aniteez') {
+        // --- 애니티즈 특전 로직 수정 ---
+        const benefit5 = Math.floor(totalAmount / 50000);
+        const benefit10 = Math.floor(totalAmount / 100000);
 
-                if (benefit5 > 0) {
-                    photocardText = `🎁 5만원 특전: 총 ${benefit5}장 증정! (8종 중 랜덤)`;
-                } else {
-                    photocardText = `🎁 (5만원 이상 구매 시 5만원 특전 증정)`;
-                }
-
-                if (benefit10 > 0) {
-                    reusableBagText = `🎁 10만원 특전 포카: 총 ${benefit10}장 증정! (8종 중 랜덤)`;
-                } else {
-                    reusableBagText = `🎁 (10만원 이상 구매 시 10만원 특전 포카 증정)`;
-                }
-
-            } else {
-                // --- 마이티즈 특전 로직 ---
-                photocardCount = Math.floor(totalAmount / 50000);
-
-                if (photocardCount > 0) {
-                    photocardText = `🎁 특전 포토카드: 총 ${photocardCount}장 증정! (8종 중 랜덤)`;
-                } else {
-                    photocardText = `🎁 (50,000원 이상 구매 시 8종 중 1종 랜덤 증정)`;
-                }
-
-                if (totalAmount >= 50000) {
-                    reusableBagText = `🛍️ 리유저블 백(4,000원) 구매 가능!`;
-                } else {
-                    reusableBagText = `🛍️ (50,000원 이상 구매 시 리유저블 백 구매 가능)`;
-                }
-            }
-
-            return { totalAmount, totalCnt, photocardText, reusableBagText, photocardCount };
+        // 5만 원 이상 구매 시
+        if (benefit5 > 0) {
+            photocardText = `🎁 5만원 이상 특전: 총 ${benefit5}장 증정! (8종 중 랜덤)`;
+        } else {
+            photocardText = `🎁 (5만원 이상 구매 시 5만원 특전 증정)`;
         }
 
+        // 10만 원 이상 구매 시
+        if (benefit10 > 0) {
+            reusableBagText = `⭐ 10만원 이상 추가 특전: 총 ${benefit10}장 추가 증정!`;
+        } else {
+            reusableBagText = `⭐ (10만원 이상 구매 시 10만원 추가 특전 증정)`;
+        }
+
+    } else {
+        // --- 마이티즈 특전 로직 ---
+        photocardCount = Math.floor(totalAmount / 50000);
+
+        if (photocardCount > 0) {
+            photocardText = `🎁 특전 포토카드: 총 ${photocardCount}장 증정! (8종 중 랜덤)`;
+        } else {
+            photocardText = `🎁 (50,000원 이상 구매 시 8종 중 1종 랜덤 증정)`;
+        }
+
+        if (totalAmount >= 50000) {
+            reusableBagText = `🛍️ 리유저블 백(4,000원) 구매 가능!`;
+        } else {
+            reusableBagText = `🛍️ (50,000원 이상 구매 시 리유저블 백 구매 가능)`;
+        }
+    }
+
+    return { totalAmount, totalCnt, photocardText, reusableBagText, photocardCount };
+}
         function render() {
             const container = document.getElementById('itemList');
             container.innerHTML = '';
