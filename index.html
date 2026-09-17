@@ -146,6 +146,38 @@
 
         .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
+        /* 날짜 선택 섹션 */
+        .date-picker-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .date-picker-label {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .date-picker-input {
+            border: 1px solid #cbd5e1;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            outline: none;
+        }
+
         .item-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -250,6 +282,7 @@
         body.theme-mighteez .btn-summary { background: #ffe0e3; }
         .btn-copy { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         .btn-save { background: #2ed573; color: white; box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3); }
+        .btn-proxy { background: #ff9f43; color: white; box-shadow: 0 4px 12px rgba(255, 159, 67, 0.3); }
 
         /* Modal Styles */
         .modal-overlay {
@@ -269,13 +302,26 @@
         .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
         .modal-close { background: none; border: none; font-size: 1.3rem; color: var(--text-sub); cursor: pointer; }
         .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        
+        .modal-info-badge {
+            background: #eef2ff;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            color: #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .summary-item { padding: 12px 0; border-bottom: 1px dashed var(--border); }
         .summary-item:last-child { border-bottom: none; }
         .summary-item-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
         .summary-item-details { font-size: 0.85rem; color: var(--text-sub); display: flex; justify-content: space-between; }
         .summary-empty { text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 0.95rem; }
         
-        .modal-footer { padding: 16px 20px; background: #f8f9fa; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px; }
+        .modal-footer { padding: 16px 20px; background: #f8f9fa; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
         .modal-total-box { display: flex; justify-content: space-between; align-items: center; background: #f0edff; padding: 12px 16px; border-radius: 12px; }
         body.theme-mighteez .modal-total-box { background: #ffe0e3; }
         .modal-total-label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
@@ -287,7 +333,26 @@
             border: 1px solid #edf2f7;
             padding: 12px;
             border-radius: 12px;
-            margin-top: 8px;
+        }
+
+        /* 대리구매 폼 인풋 스타일 */
+        .proxy-form-group {
+            margin-bottom: 14px;
+        }
+        .proxy-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .proxy-form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
         }
 
         .toast {
@@ -332,7 +397,15 @@
             <button class="btn-view-summary" onclick="openModal()">📋 구매 내역 보기</button>
         </header>
 
-        <div class="container" id="itemList"></div>
+        <div class="container">
+            <!-- 📅 방문 날짜 선택 카드 -->
+            <div class="date-picker-card">
+                <span class="date-picker-label">📅 팝업 방문 예정일</span>
+                <input type="date" id="visitDate" class="date-picker-input" onchange="updateDateDisplay()">
+            </div>
+
+            <div id="itemList"></div>
+        </div>
 
         <div class="bottom-bar">
             <div class="bottom-content">
@@ -358,7 +431,15 @@
             </div>
 
             <!-- 상품 목록 출력 영역 -->
-            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-body">
+                <!-- 선택 날짜 & 대리구매 정보 표시 -->
+                <div class="modal-info-badge" id="modalInfoBadge">
+                    <div>📅 방문 예정일: <strong id="modalVisitDateText">미선택</strong></div>
+                    <div id="modalProxyText" style="display: none;">🤝 대리구매: <strong id="modalProxyNames"></strong></div>
+                </div>
+
+                <div id="modalBody"></div>
+            </div>
 
             <div class="modal-footer">
                 <!-- 총 금액 영역 -->
@@ -369,22 +450,40 @@
 
                 <!-- 🎁 특전 및 이벤트 안내 영역 -->
                 <div class="event-benefits-area" id="eventBenefitsArea">
-                    <!-- 포토카드 특전 문구 -->
-                    <p id="photocardBenefitText" style="color: #e63946; font-weight: bold; margin: 0; font-size: 0.9em;">
-                        🎁 특전 포토카드 8장 중 0종 증정!
-                    </p>
-                    
-                    <!-- 리유저블 백 문구 -->
-                    <p id="reusableBagText" style="color: #2a9d8f; font-size: 0.85em; margin: 5px 0 0 0;">
-                        🛍️ 리유저블 백(4,000원) 구매 가능!
-                    </p>
+                    <p id="photocardBenefitText" style="color: #e63946; font-weight: bold; margin: 0; font-size: 0.85em;"></p>
+                    <p id="reusableBagText" style="color: #2a9d8f; font-size: 0.8em; margin: 4px 0 0 0;"></p>
                 </div>
 
-                <div style="display: flex; gap: 6px; margin-top: 4px;">
-                    <button class="btn btn-reset" style="flex: 1;" onclick="closeModal()">닫기</button>
-                    <button class="btn btn-copy" style="flex: 1.2;" onclick="copySummary()">내역 복사</button>
-                    <button class="btn btn-save" style="flex: 1.2;" onclick="saveAsImage()">📸 이미지 저장</button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <button class="btn btn-proxy" onclick="openProxyModal()">🤝 대리구매 신청</button>
+                    <button class="btn btn-save" onclick="saveAsImage()">📸 이미지 저장</button>
+                    <button class="btn btn-copy" onclick="copySummary()">내역 복사</button>
+                    <button class="btn btn-reset" onclick="closeModal()">닫기</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🤝 대리구매 요청 작성 모달 -->
+    <div class="modal-overlay" id="proxyModal">
+        <div class="modal-container" style="max-width: 360px;">
+            <div class="modal-header">
+                <div class="modal-title">🤝 대리구매 요청 정보</div>
+                <button class="modal-close" onclick="closeProxyModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="proxy-form-group">
+                    <label for="applicantName">신청자 이름 / 닉네임</label>
+                    <input type="text" id="applicantName" placeholder="예: 에이티니">
+                </div>
+                <div class="proxy-form-group">
+                    <label for="buyerName">대리구매자 이름 / 닉네임</label>
+                    <input type="text" id="buyerName" placeholder="예: 홍길동">
+                </div>
+            </div>
+            <div class="modal-footer" style="flex-direction: row; gap: 8px;">
+                <button class="btn btn-reset" style="flex: 1;" onclick="clearProxyInfo()">초기화</button>
+                <button class="btn btn-copy" style="flex: 1.5;" onclick="saveProxyInfo()">적용하기</button>
             </div>
         </div>
     </div>
@@ -444,11 +543,18 @@
         let currentType = 'aniteez';
         let currentMdData = [];
         let state = {};
+        let proxyData = { applicant: '', buyer: '' };
+
+        // 오늘 날짜를 YYYY-MM-DD 형식으로 구하기
+        const today = new Date().toISOString().split('T')[0];
 
         function selectType(type) {
             currentType = type;
             document.getElementById('homeScreen').style.display = 'none';
             document.getElementById('calcScreen').style.display = 'block';
+
+            // 기본 날짜 오늘로 초기화
+            document.getElementById('visitDate').value = today;
 
             if (type === 'aniteez') {
                 document.body.classList.remove('theme-mighteez');
@@ -472,6 +578,7 @@
 
         function initData() {
             state = {};
+            proxyData = { applicant: '', buyer: '' };
             currentMdData.forEach(item => {
                 state[item.id] = {};
                 if (item.hasMembers) {
@@ -642,6 +749,7 @@
 
         function resetAll() {
             initData();
+            document.getElementById('visitDate').value = today;
             render();
             showToast("수량이 초기화되었습니다.");
         }
@@ -649,6 +757,18 @@
         function openModal() {
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = '';
+
+            // 날짜 및 대리구매자 정보 모달 반영
+            const dateVal = document.getElementById('visitDate').value;
+            document.getElementById('modalVisitDateText').innerText = dateVal || '미선택';
+
+            const proxyBox = document.getElementById('modalProxyText');
+            if (proxyData.applicant || proxyData.buyer) {
+                proxyBox.style.display = 'block';
+                document.getElementById('modalProxyNames').innerText = `신청자 [${proxyData.applicant || '미입력'}] / 대리인 [${proxyData.buyer || '미입력'}]`;
+            } else {
+                proxyBox.style.display = 'none';
+            }
 
             let hasSelection = false;
 
@@ -711,6 +831,34 @@
             }
         }
 
+        /* 🤝 대리구매 모달 관련 기능 */
+        function openProxyModal() {
+            document.getElementById('applicantName').value = proxyData.applicant;
+            document.getElementById('buyerName').value = proxyData.buyer;
+            document.getElementById('proxyModal').classList.add('active');
+        }
+
+        function closeProxyModal() {
+            document.getElementById('proxyModal').classList.remove('active');
+        }
+
+        function saveProxyInfo() {
+            proxyData.applicant = document.getElementById('applicantName').value.trim();
+            proxyData.buyer = document.getElementById('buyerName').value.trim();
+            closeProxyModal();
+            openModal(); // 모달 정보 새로고침
+            showToast("대리구매 정보가 적용되었습니다.");
+        }
+
+        function clearProxyInfo() {
+            proxyData = { applicant: '', buyer: '' };
+            document.getElementById('applicantName').value = '';
+            document.getElementById('buyerName').value = '';
+            closeProxyModal();
+            openModal();
+            showToast("대리구매 정보가 초기화되었습니다.");
+        }
+
         function copySummary() {
             const data = getTotalData();
             if (data.totalCnt === 0) {
@@ -718,8 +866,15 @@
                 return;
             }
 
+            const dateVal = document.getElementById('visitDate').value;
             const titleStr = currentType === 'aniteez' ? '[애니티즈 MD 구매 목록]' : '[마이티즈 팝업 MD 구매 목록]';
+            
             let text = titleStr + "\n";
+            if (dateVal) text += `📅 방문 예정일: ${dateVal}\n`;
+            if (proxyData.applicant || proxyData.buyer) {
+                text += `🤝 대리구매: 신청자 [${proxyData.applicant || '미입력'}] / 대리인 [${proxyData.buyer || '미입력'}]\n`;
+            }
+            text += "-------------------------\n";
 
             currentMdData.forEach(item => {
                 const cnt = getItemTotalCount(item.id);
@@ -761,7 +916,8 @@
             const captureArea = document.getElementById('modalCaptureArea');
             html2canvas(captureArea, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `ATEEZ_MD_List_${new Date().toISOString().slice(0, 10)}.png`;
+                const dateVal = document.getElementById('visitDate').value || new Date().toISOString().slice(0, 10);
+                link.download = `ATEEZ_MD_List_${dateVal}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
