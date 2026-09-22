@@ -367,6 +367,32 @@
             border-radius: 12px;
         }
 
+        /* 공식 배송 일정 안내 박스 스타일 */
+        .shipping-info-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--primary);
+        }
+        .shipping-info-box h4 {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .shipping-info-box p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #475569;
+            margin-bottom: 4px;
+        }
+        .shipping-info-box ul {
+            padding-left: 18px;
+            font-size: 0.82rem;
+            color: #475569;
+            line-height: 1.5;
+        }
+
         /* 대리구매/메모 폼 인풋 스타일 */
         .proxy-form-group {
             margin-bottom: 14px;
@@ -517,17 +543,32 @@
         </div>
     </div>
 
-    <!-- 🚚 배송 일정 작성 모달 -->
+    <!-- 🚚 배송 일정 작성 및 공식 일정 안내 모달 -->
     <div class="modal-overlay" id="shippingModal">
-        <div class="modal-container" style="max-width: 360px;">
+        <div class="modal-container" style="max-width: 400px;">
             <div class="modal-header">
-                <div class="modal-title">🚚 배송 일정 관련 메모</div>
+                <div class="modal-title">🚚 판매 및 배송 일정 안내</div>
                 <button class="modal-close" onclick="closeShippingModal()">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- 판매처 및 공식 배송 일정 정보 -->
+                <div class="shipping-info-box">
+                    <h4>📢 판매 및 배송 안내</h4>
+                    <p><strong>판매처:</strong> KQ SHOP (<a href="https://kqshop.kr" target="_blank" style="color:var(--primary); font-weight:600;">kqshop.kr</a>)</p>
+                    <p><strong>판매기간:</strong><br>2026. 10. 01 (THU) 13:00 ~ 2026. 10. 11 (SUN) 21:00 (KST)</p>
+                    <hr style="border:0; border-top:1px dashed #cbd5e1; margin:8px 0;">
+                    <p><strong>🚚 배송 일정:</strong></p>
+                    <ul>
+                        <li><strong>PHOTOBOOK Blue Drift:</strong><br>2026.10.12 (MON)부터 순차 발송</li>
+                        <li><strong>PLUSH SEA COLLECTION을 제외한 MD:</strong><br>2026.11. 셋째주부터 순차 발송</li>
+                        <li><strong>PLUSH SEA COLLECTION:</strong><br>2026.11. 말부터 순차 발송</li>
+                    </ul>
+                </div>
+
+                <!-- 개인 메모 입력 영역 -->
                 <div class="proxy-form-group">
-                    <label for="shippingNoteInput">배송 관련 메모를 입력해 주세요.</label>
-                    <textarea id="shippingNoteInput" rows="4" placeholder="예: 10월 중순 순차 배송 예정 / 1차 예약 구매 건"></textarea>
+                    <label for="shippingNoteInput">📝 개인 배송 관련 메모 (선택)</label>
+                    <textarea id="shippingNoteInput" rows="3" placeholder="예: 1차 예약 구매 건 / 주소지 변경 필요"></textarea>
                 </div>
             </div>
             <div class="modal-footer" style="flex-direction: row; gap: 8px;">
@@ -903,7 +944,7 @@
             }
         }
 
-        /* 🚚 배송 일정 작성 함수 */
+        /* 🚚 배송 일정 작성 및 모달 제어 */
         function openShippingModal() {
             document.getElementById('shippingModal').classList.add('active');
         }
@@ -915,14 +956,14 @@
         function saveShippingInfo() {
             shippingNotes = document.getElementById('shippingNoteInput').value;
             closeShippingModal();
-            showToast('배송 정보 메모가 저장되었습니다.');
+            showToast('개인 메모가 저장되었습니다.');
         }
 
         function clearShippingInfo() {
             shippingNotes = '';
             document.getElementById('shippingNoteInput').value = '';
             closeShippingModal();
-            showToast('배송 정보 메모가 초기화되었습니다.');
+            showToast('개인 메모가 초기화되었습니다.');
         }
 
         /* 🤝 대리구매 모달 관련 함수 */
@@ -953,16 +994,41 @@
             showToast('대리구매 정보가 초기화되었습니다.');
         }
 
-        /* 📸 이미지 저장 (html2canvas) */
+        /* 📸 이미지 저장 (html2canvas - 전체 스크롤 풀고 캡처하도록 수정) */
         function saveAsImage() {
             const captureArea = document.getElementById('modalCaptureArea');
+            const modalBodyContainer = document.getElementById('modalBodyContainer');
+            
             showToast('이미지 생성 중입니다...');
 
-            html2canvas(captureArea, { scale: 2 }).then(canvas => {
+            // 기존 스타일 백업
+            const origContainerMaxHeight = captureArea.style.maxHeight;
+            const origContainerOverflow = captureArea.style.overflow;
+            const origBodyOverflow = modalBodyContainer.style.overflow;
+
+            // 스크롤 및 높이 제한 임시 제거 (전체 내용 다 찍히게 설정)
+            captureArea.style.maxHeight = 'none';
+            captureArea.style.overflow = 'visible';
+            modalBodyContainer.style.overflow = 'visible';
+
+            html2canvas(captureArea, { 
+                scale: 2,
+                useCORS: true,
+                scrollY: -window.scrollY
+            }).then(canvas => {
+                // 원래 스타일 원복
+                captureArea.style.maxHeight = origContainerMaxHeight;
+                captureArea.style.overflow = origContainerOverflow;
+                modalBodyContainer.style.overflow = origBodyOverflow;
+
                 const imgData = canvas.toDataURL('image/png');
                 document.getElementById('resultImg').src = imgData;
                 document.getElementById('resultImageModal').classList.add('active');
             }).catch(err => {
+                // 에러 발생 시에도 스타일 원복
+                captureArea.style.maxHeight = origContainerMaxHeight;
+                captureArea.style.overflow = origContainerOverflow;
+                modalBodyContainer.style.overflow = origBodyOverflow;
                 alert('이미지 생성 실패: ' + err);
             });
         }
