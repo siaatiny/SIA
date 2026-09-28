@@ -84,6 +84,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 8px;
         }
 
         .date-picker-label {
@@ -93,9 +94,10 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
         }
 
-        .date-picker-input {
+        .date-picker-input, .time-picker-select {
             border: 1px solid #cbd5e1;
             padding: 6px 10px;
             border-radius: 8px;
@@ -103,6 +105,12 @@
             font-weight: 600;
             color: var(--text);
             outline: none;
+            background-color: white;
+        }
+
+        .time-picker-select {
+            max-width: 65%;
+            text-overflow: ellipsis;
         }
 
         /* 온/오프라인 스위치 토글 */
@@ -340,11 +348,17 @@
 
     <!-- MD 계산기 화면 -->
     <div id="calcTabSection" class="container">
-        <!-- 📅 날짜 & 🌐 온/오프라인 선택 카드 -->
+        <!-- 📅 날짜 & ⏰ 시간 & 🌐 온/오프라인 선택 카드 -->
         <div class="date-picker-card">
             <div class="picker-row">
                 <span class="date-picker-label">📅 구매/방문 예정일</span>
                 <input type="date" id="visitDate" class="date-picker-input" onchange="updateDateDisplay()">
+            </div>
+            <div class="picker-row">
+                <span class="date-picker-label">⏰ 방문 시간대</span>
+                <select id="visitTime" class="time-picker-select" onchange="updateDateDisplay()">
+                    <option value="">미선택</option>
+                </select>
             </div>
             <div class="picker-row">
                 <span class="date-picker-label">🛒 구매 방식</span>
@@ -384,7 +398,8 @@
             <div class="modal-body" id="modalBodyContainer">
                 <div class="modal-info-badge" id="modalInfoBadge">
                     <div>📌 구매 방식: <strong id="modalChannelText">온라인</strong></div>
-                    <div>📅 구매/방문 예정일: <strong id="modalVisitDateText">미선택</strong></div>
+                    <div>📅 방문 예정일: <strong id="modalVisitDateText">미선택</strong></div>
+                    <div>⏰ 방문 시간대: <strong id="modalVisitTimeText">미선택</strong></div>
                     <div id="modalShippingText" style="display: none;">🚚 배송 일정 메모: <strong id="modalShippingNotes"></strong></div>
                     <div id="modalProxyText" style="display: none;">🤝 대리구매: <strong id="modalProxyNames"></strong></div>
                 </div>
@@ -520,9 +535,35 @@
 
         window.onload = function() {
             document.getElementById('visitDate').value = today;
+            initTimeOptions();
             initData();
             render();
         };
+
+        /* 11:00부터 21:00까지 30분 간격으로 20개 회차 옵션 자동 생성 */
+        function initTimeOptions() {
+            const timeSelect = document.getElementById('visitTime');
+            let startMinutes = 11 * 60; // 11:00 AM (minutes)
+
+            for (let i = 1; i <= 20; i++) {
+                const startH = Math.floor(startMinutes / 60);
+                const startM = startMinutes % 60;
+                const endMinutes = startMinutes + 30;
+                const endH = Math.floor(endMinutes / 60);
+                const endM = endMinutes % 60;
+
+                const startStr = `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`;
+                const endStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
+                const label = `${i}회차 (${startStr} ~ ${endStr})`;
+
+                const option = document.createElement('option');
+                option.value = label;
+                option.textContent = label;
+                timeSelect.appendChild(option);
+
+                startMinutes += 30;
+            }
+        }
 
         function initData() {
             state = {};
@@ -539,7 +580,10 @@
 
         function updateDateDisplay() {
             const dateVal = document.getElementById('visitDate').value;
+            const timeVal = document.getElementById('visitTime').value;
+
             document.getElementById('modalVisitDateText').innerText = dateVal || '미선택';
+            document.getElementById('modalVisitTimeText').innerText = timeVal || '미선택';
         }
 
         function setChannel(channel) {
@@ -854,9 +898,12 @@
             }
 
             const dateVal = document.getElementById('visitDate').value || '미선택';
+            const timeVal = document.getElementById('visitTime').value || '미선택';
+
             let summaryText = `[ATEEZ 8주년 MD 구매 내역]\n`;
             summaryText += `📌 구매 방식: ${currentChannel}\n`;
-            summaryText += `📅 예정일: ${dateVal}\n`;
+            summaryText += `📅 방문 예정일: ${dateVal}\n`;
+            summaryText += `⏰ 방문 시간대: ${timeVal}\n`;
 
             if (shippingNotes) summaryText += `🚚 배송 메모: ${shippingNotes}\n`;
             if (proxyData.applicant || proxyData.buyer) {
