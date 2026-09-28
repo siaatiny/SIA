@@ -280,6 +280,24 @@
             border: 1px solid #ffe0e0;
             padding: 12px;
             border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .benefit-line {
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .benefit-line.primary { color: #e63946; }
+        .benefit-line.secondary { color: #2a9d8f; }
+        .benefit-sub {
+            font-size: 0.78rem;
+            color: #718096;
+            margin-top: -2px;
         }
 
         .shipping-info-box {
@@ -382,8 +400,9 @@
 
                 <!-- 🎁 구매 방식 및 금액 맞춤 특전 표시 영역 -->
                 <div class="event-benefits-area" id="eventBenefitsArea">
-                    <p id="photocardBenefitText" style="color: #e63946; font-weight: bold; margin: 0; font-size: 0.85em;"></p>
-                    <p id="reusableBagText" style="color: #2a9d8f; font-size: 0.8em; margin: 4px 0 0 0;"></p>
+                    <div id="benefitPhotocardText" class="benefit-line primary"></div>
+                    <div id="benefitLuckyDrawText" class="benefit-line secondary" style="display: none;"></div>
+                    <div id="benefitNextTierText" class="benefit-sub"></div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
@@ -564,6 +583,54 @@
             return { totalCount, totalPrice };
         }
 
+        /* 특전 정보 산출 함수 */
+        function calculateBenefits(price, channel) {
+            let pcCount = 0;
+            let luckyDrawCount = 0;
+            let needSns = false;
+            let nextTierText = '';
+
+            if (channel === '온라인') {
+                pcCount = Math.floor(price / 50000);
+                const remain = 50000 - (price % 50000);
+                if (price > 0 && remain < 50000) {
+                    nextTierText = `💡 ${(remain).toLocaleString()}원 더 구매 시 포토카드 1매 추가 증정`;
+                } else if (price === 0) {
+                    nextTierText = `💡 50,000원 구매 시 포토카드 1매 증정`;
+                }
+            } else {
+                // 오프라인 특전 로직
+                if (price >= 160000) {
+                    pcCount = 3;
+                    luckyDrawCount = 4;
+                    needSns = true;
+                } else if (price >= 100000) {
+                    pcCount = 2;
+                    luckyDrawCount = 2;
+                    needSns = true;
+                    const remain = 160000 - price;
+                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 시 포카 3매 + 럭드 4매 (SNS 인증 필요)`;
+                } else if (price >= 80000) {
+                    pcCount = 1;
+                    luckyDrawCount = 2;
+                    needSns = true;
+                    const remain = 100000 - price;
+                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 시 포카 2매 + 럭드 2매 (SNS 인증 필요)`;
+                } else if (price >= 50000) {
+                    pcCount = 1;
+                    luckyDrawCount = 0;
+                    needSns = false;
+                    const remain = 80000 - price;
+                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 + SNS 인증 시 럭키드로우 2매 추가!`;
+                } else {
+                    const remain = 50000 - price;
+                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 시 특전 포토카드 1매 증정`;
+                }
+            }
+
+            return { pcCount, luckyDrawCount, needSns, nextTierText };
+        }
+
         function render() {
             const container = document.getElementById('itemList');
             container.innerHTML = '';
@@ -681,23 +748,26 @@
             document.getElementById('modalTotalCount').innerText = `총 ${totals.totalCount}개 선택`;
             document.getElementById('modalTotalPrice').innerText = `${totals.totalPrice.toLocaleString()}원`;
 
-            // 특전 계산 영역
-            const pcText = document.getElementById('photocardBenefitText');
-            const bagText = document.getElementById('reusableBagText');
+            // 특전 정보 업데이트
+            const benefits = calculateBenefits(totals.totalPrice, currentChannel);
+            const pcEl = document.getElementById('benefitPhotocardText');
+            const luckyEl = document.getElementById('benefitLuckyDrawText');
+            const nextEl = document.getElementById('benefitNextTierText');
 
-            if (totals.totalPrice >= 50000) {
-                const pcAmount = Math.floor(totals.totalPrice / 50000);
-                pcText.innerText = `🎁 5만원 이상 구매 특전 포토카드 ${pcAmount}장 대상!`;
+            if (benefits.pcCount > 0) {
+                pcEl.innerText = `🎁 구매 특전 포토카드: ${benefits.pcCount}매`;
             } else {
-                pcText.innerText = `🎁 5만원 이상 구매 시 특전 포토카드 증정 (부족 금액: ${(50000 - totals.totalPrice).toLocaleString()}원)`;
+                pcEl.innerText = `🎁 구매 특전 포토카드: 0매`;
             }
 
-            if (currentChannel === '오프라인' && totals.totalPrice >= 100000) {
-                bagText.innerText = `🛍️ 오프라인 10만원 이상 쇼퍼백 증정 대상!`;
-                bagText.style.display = 'block';
+            if (currentChannel === '오프라인' && benefits.luckyDrawCount > 0) {
+                luckyEl.style.display = 'block';
+                luckyEl.innerText = `🎟️ 럭키드로우 응모권: ${benefits.luckyDrawCount}매 ${benefits.needSns ? '(SNS 인증 필요)' : ''}`;
             } else {
-                bagText.style.display = 'none';
+                luckyEl.style.display = 'none';
             }
+
+            nextEl.innerText = benefits.nextTierText;
 
             document.getElementById('summaryModal').classList.add('active');
         }
@@ -812,8 +882,12 @@
             summaryText += `💰 총 수량: ${totals.totalCount}개\n`;
             summaryText += `💳 총 금액: ${totals.totalPrice.toLocaleString()}원\n`;
 
-            if (totals.totalPrice >= 50000) {
-                summaryText += `🎁 특전 포카: ${Math.floor(totals.totalPrice / 50000)}장\n`;
+            const benefits = calculateBenefits(totals.totalPrice, currentChannel);
+            if (benefits.pcCount > 0) {
+                summaryText += `🎁 특전 포카: ${benefits.pcCount}매\n`;
+            }
+            if (currentChannel === '오프라인' && benefits.luckyDrawCount > 0) {
+                summaryText += `🎟️ 럭키드로우: ${benefits.luckyDrawCount}매 ${benefits.needSns ? '(SNS 인증 필요)' : ''}\n`;
             }
 
             navigator.clipboard.writeText(summaryText).then(() => {
