@@ -719,7 +719,7 @@
                     const qty = state[item.id] || 0;
                     contentHtml += `
                         <div class="simple-counter-wrapper">
-                            <span class="simple-label">수량 선택</span>
+                            <span class="simple-label">수량</span>
                             <div class="counter-lg">
                                 <button onclick="updateQuantity(${item.id}, null, -1)">-</button>
                                 <span>${qty}</span>
@@ -739,80 +739,96 @@
         }
 
         function resetAll() {
-            if (confirm('선택된 모든 내역을 초기화하시겠습니까?')) {
+            if (confirm("선택한 모든 수량을 초기화하시겠습니까?")) {
                 initData();
                 render();
-                showToast('초기화되었습니다.');
             }
         }
 
-        /* 모달 제어 관련 함수 */
-        function openModal() {
-            updateDateDisplay();
-            document.getElementById('modalChannelText').innerText = currentChannel;
-
+        function updateModalContent() {
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = '';
 
-            let hasItems = false;
-            let listHtml = '';
+            document.getElementById('modalChannelText').innerText = currentChannel;
+            updateDateDisplay();
 
+            const shippingBox = document.getElementById('modalShippingText');
+            if (shippingNotes) {
+                document.getElementById('modalShippingNotes').innerText = shippingNotes;
+                shippingBox.style.display = 'block';
+            } else {
+                shippingBox.style.display = 'none';
+            }
+
+            const proxyBox = document.getElementById('modalProxyText');
+            if (proxyData.applicant || proxyData.buyer) {
+                document.getElementById('modalProxyNames').innerText = `신청자: ${proxyData.applicant || '미입력'} / 대리인: ${proxyData.buyer || '미입력'}`;
+                proxyBox.style.display = 'block';
+            } else {
+                proxyBox.style.display = 'none';
+            }
+
+            let hasItem = false;
             dataAniteez.forEach(item => {
                 const count = getItemTotalCount(item.id);
                 if (count > 0) {
-                    hasItems = true;
-                    let memberDetails = [];
+                    hasItem = true;
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'summary-item';
+
+                    let detailText = '';
                     if (item.hasMembers) {
-                        members.forEach(m => {
-                            if (state[item.id][m] > 0) {
-                                memberDetails.push(`${m} ${state[item.id][m]}개`);
-                            }
-                        });
+                        const selectedMembers = members.filter(m => state[item.id][m] > 0);
+                        detailText = selectedMembers.map(m => `${m} ${state[item.id][m]}개`).join(', ');
+                    } else {
+                        detailText = `${count}개`;
                     }
 
-                    listHtml += `
-                        <div class="summary-item">
-                            <div class="summary-item-title">${item.name}</div>
-                            <div class="summary-item-details">
-                                <span>${item.hasMembers ? memberDetails.join(', ') : `수량: ${count}개`}</span>
-                                <strong>${(count * item.price).toLocaleString()}원</strong>
-                            </div>
+                    itemDiv.innerHTML = `
+                        <div class="summary-item-title">${item.name}</div>
+                        <div class="summary-item-details">
+                            <span>${detailText}</span>
+                            <span><b>${(count * item.price).toLocaleString()}원</b></span>
                         </div>
                     `;
+                    modalBody.appendChild(itemDiv);
                 }
             });
 
-            if (!hasItems) {
+            if (!hasItem) {
                 modalBody.innerHTML = `<div class="summary-empty">선택된 상품이 없습니다.</div>`;
-            } else {
-                modalBody.innerHTML = listHtml;
             }
 
             const totals = calculateOverallTotal();
             document.getElementById('modalTotalCount').innerText = `총 ${totals.totalCount}개 선택`;
             document.getElementById('modalTotalPrice').innerText = `${totals.totalPrice.toLocaleString()}원`;
 
-            // 특전 정보 업데이트
+            // 특전 계산 및 표시
             const benefits = calculateBenefits(totals.totalPrice, currentChannel);
-            const pcEl = document.getElementById('benefitPhotocardText');
-            const luckyEl = document.getElementById('benefitLuckyDrawText');
-            const nextEl = document.getElementById('benefitNextTierText');
+            const pcTextEl = document.getElementById('benefitPhotocardText');
+            const ldTextEl = document.getElementById('benefitLuckyDrawText');
+            const nextTextEl = document.getElementById('benefitNextTierText');
 
             if (benefits.pcCount > 0) {
-                pcEl.innerText = `🎁 구매 특전 포토카드: ${benefits.pcCount}매`;
+                pcTextEl.innerText = `🎁 특전 포토카드: 총 ${benefits.pcCount}매 증정`;
+                pcTextEl.style.display = 'flex';
             } else {
-                pcEl.innerText = `🎁 구매 특전 포토카드: 0매`;
+                pcTextEl.innerText = `🎁 특전 포토카드: 0매`;
+                pcTextEl.style.display = 'flex';
             }
 
-            if (currentChannel === '오프라인' && benefits.luckyDrawCount > 0) {
-                luckyEl.style.display = 'block';
-                luckyEl.innerText = `🎟️ 럭키드로우 응모권: ${benefits.luckyDrawCount}매 ${benefits.needSns ? '(SNS 인증 필요)' : ''}`;
+            if (benefits.luckyDrawCount > 0) {
+                ldTextEl.innerText = `🍀 럭키드로우: 총 ${benefits.luckyDrawCount}매 증정 ${benefits.needSns ? '(SNS 인증 필수)' : ''}`;
+                ldTextEl.style.display = 'flex';
             } else {
-                luckyEl.style.display = 'none';
+                ldTextEl.style.display = 'none';
             }
 
-            nextEl.innerText = benefits.nextTierText;
+            nextTextEl.innerText = benefits.nextTierText || '';
+        }
 
+        function openModal() {
+            updateModalContent();
             document.getElementById('summaryModal').classList.add('active');
         }
 
@@ -826,130 +842,63 @@
             }
         }
 
-        function openShippingModal() {
-            document.getElementById('shippingNoteInput').value = shippingNotes;
-            document.getElementById('shippingModal').classList.add('active');
-        }
-
-        function closeShippingModal() {
-            document.getElementById('shippingModal').classList.remove('active');
-        }
-
-        function saveShippingInfo() {
-            shippingNotes = document.getElementById('shippingNoteInput').value.trim();
-            const noteContainer = document.getElementById('modalShippingText');
-            if (shippingNotes) {
-                document.getElementById('modalShippingNotes').innerText = shippingNotes;
-                noteContainer.style.display = 'block';
-            } else {
-                noteContainer.style.display = 'none';
-            }
-            closeShippingModal();
-            showToast('배송 정보가 저장되었습니다.');
-        }
-
-        function clearShippingInfo() {
-            document.getElementById('shippingNoteInput').value = '';
-            shippingNotes = '';
-            document.getElementById('modalShippingText').style.display = 'none';
-            closeShippingModal();
-            showToast('배송 정보가 초기화되었습니다.');
-        }
-
-        function openProxyModal() {
-            document.getElementById('applicantName').value = proxyData.applicant;
-            document.getElementById('buyerName').value = proxyData.buyer;
-            document.getElementById('proxyModal').classList.add('active');
-        }
-
-        function closeProxyModal() {
-            document.getElementById('proxyModal').classList.remove('active');
-        }
-
-        function saveProxyInfo() {
-            proxyData.applicant = document.getElementById('applicantName').value.trim();
-            proxyData.buyer = document.getElementById('buyerName').value.trim();
-
-            const proxyContainer = document.getElementById('modalProxyText');
-            if (proxyData.applicant || proxyData.buyer) {
-                document.getElementById('modalProxyNames').innerText = `신청: ${proxyData.applicant || '-'} / 대리: ${proxyData.buyer || '-'}`;
-                proxyContainer.style.display = 'block';
-            } else {
-                proxyContainer.style.display = 'none';
-            }
-            closeProxyModal();
-            showToast('대리구매 정보가 저장되었습니다.');
-        }
-
-        function clearProxyInfo() {
-            document.getElementById('applicantName').value = '';
-            document.getElementById('buyerName').value = '';
-            proxyData = { applicant: '', buyer: '' };
-            document.getElementById('modalProxyText').style.display = 'none';
-            closeProxyModal();
-            showToast('대리구매 정보가 초기화되었습니다.');
-        }
-
-        function copySummary() {
-            const totals = calculateOverallTotal();
-            if (totals.totalCount === 0) {
-                alert('선택된 상품이 없습니다.');
-                return;
-            }
-
-            const dateVal = document.getElementById('visitDate').value || '미선택';
-            const timeVal = document.getElementById('visitTime').value || '미선택';
-
-            let summaryText = `[ATEEZ 8주년 MD 구매 내역]\n`;
-            summaryText += `📌 구매 방식: ${currentChannel}\n`;
-            summaryText += `📅 방문 예정일: ${dateVal}\n`;
-            summaryText += `⏰ 방문 시간대: ${timeVal}\n`;
-
-            if (shippingNotes) summaryText += `🚚 배송 메모: ${shippingNotes}\n`;
-            if (proxyData.applicant || proxyData.buyer) {
-                summaryText += `🤝 대리구매: (신청) ${proxyData.applicant || '-'} / (대리) ${proxyData.buyer || '-'}\n`;
-            }
-            summaryText += `--------------------\n`;
-
-            dataAniteez.forEach(item => {
-                const count = getItemTotalCount(item.id);
-                if (count > 0) {
-                    summaryText += `• ${item.name} (${count}개) - ${(count * item.price).toLocaleString()}원\n`;
-                    if (item.hasMembers) {
-                        members.forEach(m => {
-                            if (state[item.id][m] > 0) {
-                                summaryText += `   └ ${m}: ${state[item.id][m]}개\n`;
-                            }
-                        });
-                    }
-                }
-            });
-
-            summaryText += `--------------------\n`;
-            summaryText += `💰 총 수량: ${totals.totalCount}개\n`;
-            summaryText += `💳 총 금액: ${totals.totalPrice.toLocaleString()}원\n`;
-
-            const benefits = calculateBenefits(totals.totalPrice, currentChannel);
-            if (benefits.pcCount > 0) {
-                summaryText += `🎁 특전 포카: ${benefits.pcCount}매\n`;
-            }
-            if (currentChannel === '오프라인' && benefits.luckyDrawCount > 0) {
-                summaryText += `🎟️ 럭키드로우: ${benefits.luckyDrawCount}매 ${benefits.needSns ? '(SNS 인증 필요)' : ''}\n`;
-            }
-
-            navigator.clipboard.writeText(summaryText).then(() => {
-                showToast('구매 내역이 클립보드에 복사되었습니다!');
-            }).catch(() => {
-                alert('복사에 실패했습니다. 권한을 확인해주세요.');
-            });
-        }
-
+        /* 📸 이미지 저장 기능 (스크롤 영역 완벽 캡처 지원) */
         function saveAsImage() {
             const captureArea = document.getElementById('modalCaptureArea');
-            html2canvas(captureArea, { scale: 2 }).then(canvas => {
+            const bodyContainer = document.getElementById('modalBodyContainer');
+
+            if (!captureArea) return;
+
+            // 캡처 전 기존 스타일 보관
+            const origCapMaxHeight = captureArea.style.maxHeight;
+            const origCapHeight = captureArea.style.height;
+            const origCapOverflow = captureArea.style.overflow;
+            
+            const origBodyMaxHeight = bodyContainer.style.maxHeight;
+            const origBodyHeight = bodyContainer.style.height;
+            const origBodyOverflow = bodyContainer.style.overflow;
+
+            // 스크롤 및 높이 제한 완전히 해제 (전체 영역 펼치기)
+            captureArea.style.maxHeight = 'none';
+            captureArea.style.height = 'auto';
+            captureArea.style.overflow = 'visible';
+
+            bodyContainer.style.maxHeight = 'none';
+            bodyContainer.style.height = 'auto';
+            bodyContainer.style.overflow = 'visible';
+
+            window.scrollTo(0, 0);
+
+            html2canvas(captureArea, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                scrollY: 0,
+                windowWidth: document.documentElement.offsetWidth
+            }).then(canvas => {
+                // 원래 모달 스타일로 즉시 원복
+                captureArea.style.maxHeight = origCapMaxHeight;
+                captureArea.style.height = origCapHeight;
+                captureArea.style.overflow = origCapOverflow;
+
+                bodyContainer.style.maxHeight = origBodyMaxHeight;
+                bodyContainer.style.height = origBodyHeight;
+                bodyContainer.style.overflow = origBodyOverflow;
+
                 const imgData = canvas.toDataURL('image/png');
                 document.getElementById('resultImg').src = imgData;
                 document.getElementById('resultImageModal').classList.add('active');
+            }).catch(err => {
+                console.error("이미지 생성 실패:", err);
+                alert("이미지 생성 중 오류가 발생했습니다.");
+                // 에러 발생 시에도 스타일 원복
+                captureArea.style.maxHeight = origCapMaxHeight;
+                captureArea.style.height = origCapHeight;
+                captureArea.style.overflow = origCapOverflow;
+
+                bodyContainer.style.maxHeight = origBodyMaxHeight;
+                bodyContainer.style.height = origBodyHeight;
+                bodyContainer.style.overflow = origBodyOverflow;
             });
         }
 
@@ -957,22 +906,113 @@
             document.getElementById('resultImageModal').classList.remove('active');
         }
 
+        function copySummary() {
+            const totals = calculateOverallTotal();
+            let text = `[에이티즈 MD 구매 내역]\n`;
+            text += `🛒 구매 방식: ${currentChannel}\n`;
+            text += `📅 방문 예정일: ${document.getElementById('visitDate').value || '미선택'}\n`;
+            text += `⏰ 방문 시간대: ${document.getElementById('visitTime').value || '미선택'}\n`;
+
+            if (shippingNotes) text += `🚚 배송 메모: ${shippingNotes}\n`;
+            if (proxyData.applicant || proxyData.buyer) {
+                text += `🤝 대리구매: 신청자(${proxyData.applicant || '-'}), 대리인(${proxyData.buyer || '-'})\n`;
+            }
+            text += `-------------------------\n`;
+
+            let hasItem = false;
+            dataAniteez.forEach(item => {
+                const count = getItemTotalCount(item.id);
+                if (count > 0) {
+                    hasItem = true;
+                    if (item.hasMembers) {
+                        const details = members.filter(m => state[item.id][m] > 0).map(m => `${m}(${state[item.id][m]})`).join(', ');
+                        text += `- ${item.name}: ${details} [총 ${count}개]\n`;
+                    } else {
+                        text += `- ${item.name}: ${count}개\n`;
+                    }
+                }
+            });
+
+            if (!hasItem) {
+                text += `선택된 상품이 없습니다.\n`;
+            }
+
+            text += `-------------------------\n`;
+            text += `💰 총 수량: ${totals.totalCount}개\n`;
+            text += `💳 총 금액: ${totals.totalPrice.toLocaleString()}원\n`;
+
+            const benefits = calculateBenefits(totals.totalPrice, currentChannel);
+            text += `🎁 특전 포카: ${benefits.pcCount}매\n`;
+            if (benefits.luckyDrawCount > 0) {
+                text += `🍀 럭키드로우: ${benefits.luckyDrawCount}매\n`;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("내역이 클립보드에 복사되었습니다!");
+            }).catch(() => {
+                alert("복사 실패. 권한을 확인해주세요.");
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        /* 🚚 배송 모달 제어 */
+        function openShippingModal() {
+            document.getElementById('shippingNoteInput').value = shippingNotes;
+            document.getElementById('shippingModal').classList.add('active');
+        }
+        function closeShippingModal() {
+            document.getElementById('shippingModal').classList.remove('active');
+        }
+        function saveShippingInfo() {
+            shippingNotes = document.getElementById('shippingNoteInput').value;
+            closeShippingModal();
+            showToast("배송 메모가 저장되었습니다.");
+        }
+        function clearShippingInfo() {
+            shippingNotes = '';
+            document.getElementById('shippingNoteInput').value = '';
+            closeShippingModal();
+            showToast("배송 메모가 초기화되었습니다.");
+        }
+
+        /* 🤝 대리구매 모달 제어 */
+        function openProxyModal() {
+            document.getElementById('applicantName').value = proxyData.applicant;
+            document.getElementById('buyerName').value = proxyData.buyer;
+            document.getElementById('proxyModal').classList.add('active');
+        }
+        function closeProxyModal() {
+            document.getElementById('proxyModal').classList.remove('active');
+        }
+        function saveProxyInfo() {
+            proxyData.applicant = document.getElementById('applicantName').value;
+            proxyData.buyer = document.getElementById('buyerName').value;
+            closeProxyModal();
+            updateModalContent();
+            showToast("대리구매 정보가 적용되었습니다.");
+        }
+        function clearProxyInfo() {
+            proxyData = { applicant: '', buyer: '' };
+            document.getElementById('applicantName').value = '';
+            document.getElementById('buyerName').value = '';
+            closeProxyModal();
+            updateModalContent();
+            showToast("대리구매 정보가 초기화되었습니다.");
+        }
+
+        /* 제품 이미지 미리보기 */
         function openImageModal(imgSrc) {
             document.getElementById('modalImg').src = imgSrc;
             document.getElementById('imageModal').classList.add('active');
         }
-
         function closeImageModal() {
             document.getElementById('imageModal').classList.remove('active');
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2000);
         }
     </script>
 </body>
