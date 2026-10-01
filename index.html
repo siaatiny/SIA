@@ -733,102 +733,99 @@
                 container.appendChild(card);
             });
 
-            const totals = calculateOverallTotal();
-            document.getElementById('totalCount').innerText = `총 ${totals.totalCount}개 선택`;
-            document.getElementById('totalPrice').innerText = `${totals.totalPrice.toLocaleString()}원`;
+            const { totalCount, totalPrice } = calculateOverallTotal();
+            document.getElementById('totalCount').innerText = `총 ${totalCount}개 선택`;
+            document.getElementById('totalPrice').innerText = `${totalPrice.toLocaleString()}원`;
         }
 
         function resetAll() {
-            if (confirm("선택한 모든 수량을 초기화하시겠습니까?")) {
+            if (confirm('선택한 수량을 모두 초기화하시겠습니까?')) {
                 initData();
                 render();
+                showToast('초기화되었습니다.');
             }
         }
 
-        function updateModalContent() {
+        function openModal() {
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = '';
+
+            const { totalCount, totalPrice } = calculateOverallTotal();
 
             document.getElementById('modalChannelText').innerText = currentChannel;
             updateDateDisplay();
 
-            const shippingBox = document.getElementById('modalShippingText');
-            if (shippingNotes) {
-                document.getElementById('modalShippingNotes').innerText = shippingNotes;
-                shippingBox.style.display = 'block';
-            } else {
-                shippingBox.style.display = 'none';
-            }
-
-            const proxyBox = document.getElementById('modalProxyText');
             if (proxyData.applicant || proxyData.buyer) {
-                document.getElementById('modalProxyNames').innerText = `신청자: ${proxyData.applicant || '미입력'} / 대리인: ${proxyData.buyer || '미입력'}`;
-                proxyBox.style.display = 'block';
+                document.getElementById('modalProxyText').style.display = 'block';
+                document.getElementById('modalProxyNames').innerText = `신청자: ${proxyData.applicant || '-'} / 대리인: ${proxyData.buyer || '-'}`;
             } else {
-                proxyBox.style.display = 'none';
+                document.getElementById('modalProxyText').style.display = 'none';
             }
 
-            let hasItem = false;
-            dataAniteez.forEach(item => {
-                const count = getItemTotalCount(item.id);
-                if (count > 0) {
-                    hasItem = true;
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'summary-item';
+            if (shippingNotes) {
+                document.getElementById('modalShippingText').style.display = 'block';
+                document.getElementById('modalShippingNotes').innerText = shippingNotes;
+            } else {
+                document.getElementById('modalShippingText').style.display = 'none';
+            }
 
-                    let detailText = '';
-                    if (item.hasMembers) {
-                        const selectedMembers = members.filter(m => state[item.id][m] > 0);
-                        detailText = selectedMembers.map(m => `${m} ${state[item.id][m]}개`).join(', ');
-                    } else {
-                        detailText = `${count}개`;
+            if (totalCount === 0) {
+                modalBody.innerHTML = `<div class="summary-empty">선택된 상품이 없습니다.<br>수량을 선택해주세요!</div>`;
+            } else {
+                dataAniteez.forEach(item => {
+                    const count = getItemTotalCount(item.id);
+                    if (count > 0) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'summary-item';
+
+                        let detailText = '';
+                        if (item.hasMembers) {
+                            const selectedMembers = [];
+                            members.forEach(m => {
+                                const q = state[item.id][m];
+                                if (q > 0) selectedMembers.push(`${m} ${q}개`);
+                            });
+                            detailText = selectedMembers.join(', ');
+                        } else {
+                            detailText = `수량: ${count}개`;
+                        }
+
+                        itemDiv.innerHTML = `
+                            <div class="summary-item-title">${item.name}</div>
+                            <div class="summary-item-details">
+                                <span>${detailText}</span>
+                                <strong>${(count * item.price).toLocaleString()}원</strong>
+                            </div>
+                        `;
+                        modalBody.appendChild(itemDiv);
                     }
-
-                    itemDiv.innerHTML = `
-                        <div class="summary-item-title">${item.name}</div>
-                        <div class="summary-item-details">
-                            <span>${detailText}</span>
-                            <span><b>${(count * item.price).toLocaleString()}원</b></span>
-                        </div>
-                    `;
-                    modalBody.appendChild(itemDiv);
-                }
-            });
-
-            if (!hasItem) {
-                modalBody.innerHTML = `<div class="summary-empty">선택된 상품이 없습니다.</div>`;
+                });
             }
 
-            const totals = calculateOverallTotal();
-            document.getElementById('modalTotalCount').innerText = `총 ${totals.totalCount}개 선택`;
-            document.getElementById('modalTotalPrice').innerText = `${totals.totalPrice.toLocaleString()}원`;
+            document.getElementById('modalTotalCount').innerText = `총 ${totalCount}개 선택`;
+            document.getElementById('modalTotalPrice').innerText = `${totalPrice.toLocaleString()}원`;
 
-            // 특전 계산 및 표시
-            const benefits = calculateBenefits(totals.totalPrice, currentChannel);
-            const pcTextEl = document.getElementById('benefitPhotocardText');
-            const ldTextEl = document.getElementById('benefitLuckyDrawText');
-            const nextTextEl = document.getElementById('benefitNextTierText');
+            const benefits = calculateBenefits(totalPrice, currentChannel);
+            const benefitPc = document.getElementById('benefitPhotocardText');
+            const benefitLd = document.getElementById('benefitLuckyDrawText');
+            const benefitNext = document.getElementById('benefitNextTierText');
 
             if (benefits.pcCount > 0) {
-                pcTextEl.innerText = `🎁 특전 포토카드: 총 ${benefits.pcCount}매 증정`;
-                pcTextEl.style.display = 'flex';
+                benefitPc.innerText = `🎁 특전 포토카드 총 ${benefits.pcCount}매 증정`;
+                benefitPc.style.display = 'block';
             } else {
-                pcTextEl.innerText = `🎁 특전 포토카드: 0매`;
-                pcTextEl.style.display = 'flex';
+                benefitPc.style.display = 'none';
             }
 
             if (benefits.luckyDrawCount > 0) {
-                ldTextEl.innerText = `🍀 럭키드로우: 총 ${benefits.luckyDrawCount}매 증정 ${benefits.needSns ? '(SNS 인증 필수)' : ''}`;
-                ldTextEl.style.display = 'flex';
+                benefitLd.innerText = `🎰 럭키드로우 총 ${benefits.luckyDrawCount}매 증정 ${benefits.needSns ? '(SNS 인증 필)' : ''}`;
+                benefitLd.style.display = 'block';
             } else {
-                ldTextEl.style.display = 'none';
+                benefitLd.style.display = 'none';
             }
 
-            nextTextEl.innerText = benefits.nextTierText || '';
-        }
+            benefitNext.innerText = benefits.nextTierText;
 
-        function openModal() {
-            updateModalContent();
             document.getElementById('summaryModal').classList.add('active');
         }
 
@@ -837,68 +834,68 @@
         }
 
         function closeModalOnOverlay(e) {
-            if (e.target.classList.contains('modal-overlay')) {
-                closeModal();
-            }
+            if (e.target === document.getElementById('summaryModal')) closeModal();
         }
 
-        /* 📸 이미지 저장 기능 (스크롤 영역 완벽 캡처 지원) */
+        /* 📸 이미지 저장 기능 - 목록이 길어도 짤리지 않게 전체 오프스크린 캡처 */
         function saveAsImage() {
-            const captureArea = document.getElementById('modalCaptureArea');
-            const bodyContainer = document.getElementById('modalBodyContainer');
+            const { totalCount } = calculateOverallTotal();
+            if (totalCount === 0) {
+                alert('선택된 상품이 없습니다!');
+                return;
+            }
 
-            if (!captureArea) return;
+            const modalInfoBadge = document.getElementById('modalInfoBadge').outerHTML;
+            const modalBody = document.getElementById('modalBody').innerHTML;
+            const modalTotalCount = document.getElementById('modalTotalCount').innerText;
+            const modalTotalPrice = document.getElementById('modalTotalPrice').innerText;
+            const eventBenefitsArea = document.getElementById('eventBenefitsArea').outerHTML;
 
-            // 캡처 전 기존 스타일 보관
-            const origCapMaxHeight = captureArea.style.maxHeight;
-            const origCapHeight = captureArea.style.height;
-            const origCapOverflow = captureArea.style.overflow;
-            
-            const origBodyMaxHeight = bodyContainer.style.maxHeight;
-            const origBodyHeight = bodyContainer.style.height;
-            const origBodyOverflow = bodyContainer.style.overflow;
+            // 오프스크린에 전체 길이 캡처용 임시 컨테이너 생성
+            const cloneWrapper = document.createElement('div');
+            cloneWrapper.style.position = 'absolute';
+            cloneWrapper.style.left = '-9999px';
+            cloneWrapper.style.top = '-9999px';
+            cloneWrapper.style.width = '450px';
+            cloneWrapper.style.backgroundColor = '#ffffff';
+            cloneWrapper.style.borderRadius = '16px';
+            cloneWrapper.style.padding = '20px';
+            cloneWrapper.style.boxSizing = 'border-box';
+            cloneWrapper.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-            // 스크롤 및 높이 제한 완전히 해제 (전체 영역 펼치기)
-            captureArea.style.maxHeight = 'none';
-            captureArea.style.height = 'auto';
-            captureArea.style.overflow = 'visible';
+            cloneWrapper.innerHTML = `
+                <div style="font-size: 1.2rem; font-weight: 800; color: #2d3436; margin-bottom: 14px; text-align: center; border-bottom: 2px solid #edf2f7; padding-bottom: 10px;">
+                    📋 나의 MD 구매 내역
+                </div>
+                ${modalInfoBadge}
+                <div style="margin-bottom: 16px;">
+                    ${modalBody}
+                </div>
+                <div style="background: #f0edff; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 0.9rem; font-weight: 700; color: #2d3436;">${modalTotalCount}</span>
+                    <span style="font-size: 1.2rem; font-weight: 800; color: #6c5ce7;">${modalTotalPrice}</span>
+                </div>
+                ${eventBenefitsArea}
+            `;
 
-            bodyContainer.style.maxHeight = 'none';
-            bodyContainer.style.height = 'auto';
-            bodyContainer.style.overflow = 'visible';
+            document.body.appendChild(cloneWrapper);
 
-            window.scrollTo(0, 0);
-
-            html2canvas(captureArea, {
+            // html2canvas 옵션으로 전체 영역 깔끔하게 캡처
+            html2canvas(cloneWrapper, {
                 scale: 2,
                 useCORS: true,
-                backgroundColor: '#ffffff',
-                scrollY: 0,
-                windowWidth: document.documentElement.offsetWidth
+                backgroundColor: '#ffffff'
             }).then(canvas => {
-                // 원래 모달 스타일로 즉시 원복
-                captureArea.style.maxHeight = origCapMaxHeight;
-                captureArea.style.height = origCapHeight;
-                captureArea.style.overflow = origCapOverflow;
-
-                bodyContainer.style.maxHeight = origBodyMaxHeight;
-                bodyContainer.style.height = origBodyHeight;
-                bodyContainer.style.overflow = origBodyOverflow;
-
                 const imgData = canvas.toDataURL('image/png');
                 document.getElementById('resultImg').src = imgData;
                 document.getElementById('resultImageModal').classList.add('active');
+                document.body.removeChild(cloneWrapper);
             }).catch(err => {
-                console.error("이미지 생성 실패:", err);
-                alert("이미지 생성 중 오류가 발생했습니다.");
-                // 에러 발생 시에도 스타일 원복
-                captureArea.style.maxHeight = origCapMaxHeight;
-                captureArea.style.height = origCapHeight;
-                captureArea.style.overflow = origCapOverflow;
-
-                bodyContainer.style.maxHeight = origBodyMaxHeight;
-                bodyContainer.style.height = origBodyHeight;
-                bodyContainer.style.overflow = origBodyOverflow;
+                console.error(err);
+                alert('이미지 생성 중 오류가 발생했습니다.');
+                if (document.body.contains(cloneWrapper)) {
+                    document.body.removeChild(cloneWrapper);
+                }
             });
         }
 
@@ -907,51 +904,122 @@
         }
 
         function copySummary() {
-            const totals = calculateOverallTotal();
-            let text = `[에이티즈 MD 구매 내역]\n`;
-            text += `🛒 구매 방식: ${currentChannel}\n`;
-            text += `📅 방문 예정일: ${document.getElementById('visitDate').value || '미선택'}\n`;
-            text += `⏰ 방문 시간대: ${document.getElementById('visitTime').value || '미선택'}\n`;
-
-            if (shippingNotes) text += `🚚 배송 메모: ${shippingNotes}\n`;
-            if (proxyData.applicant || proxyData.buyer) {
-                text += `🤝 대리구매: 신청자(${proxyData.applicant || '-'}), 대리인(${proxyData.buyer || '-'})\n`;
+            const { totalCount, totalPrice } = calculateOverallTotal();
+            if (totalCount === 0) {
+                alert('선택된 상품이 없습니다!');
+                return;
             }
-            text += `-------------------------\n`;
 
-            let hasItem = false;
+            let text = `[에이티즈 8주년 MD 구매 내역]\n`;
+            text += `🛒 구매 방식: ${currentChannel}\n`;
+            text += `📅 예정일: ${document.getElementById('visitDate').value || '미선택'}\n`;
+            text += `⏰ 시간대: ${document.getElementById('visitTime').value || '미선택'}\n`;
+
+            if (proxyData.applicant || proxyData.buyer) {
+                text += `🤝 대리구매: 신청자(${proxyData.applicant || '-'}) / 대리인(${proxyData.buyer || '-'})\n`;
+            }
+            if (shippingNotes) {
+                text += `🚚 메모: ${shippingNotes}\n`;
+            }
+
+            text += `------------------------\n`;
+
             dataAniteez.forEach(item => {
                 const count = getItemTotalCount(item.id);
                 if (count > 0) {
-                    hasItem = true;
                     if (item.hasMembers) {
-                        const details = members.filter(m => state[item.id][m] > 0).map(m => `${m}(${state[item.id][m]})`).join(', ');
-                        text += `- ${item.name}: ${details} [총 ${count}개]\n`;
+                        const selectedMembers = [];
+                        members.forEach(m => {
+                            const q = state[item.id][m];
+                            if (q > 0) selectedMembers.push(`${m}(${q})`);
+                        });
+                        text += `▪ ${item.name}: ${selectedMembers.join(', ')} - ${(count * item.price).toLocaleString()}원\n`;
                     } else {
-                        text += `- ${item.name}: ${count}개\n`;
+                        text += `▪ ${item.name}: ${count}개 - ${(count * item.price).toLocaleString()}원\n`;
                     }
                 }
             });
 
-            if (!hasItem) {
-                text += `선택된 상품이 없습니다.\n`;
-            }
+            text += `------------------------\n`;
+            text += `💳 총 ${totalCount}개 / ${totalPrice.toLocaleString()}원\n`;
 
-            text += `-------------------------\n`;
-            text += `💰 총 수량: ${totals.totalCount}개\n`;
-            text += `💳 총 금액: ${totals.totalPrice.toLocaleString()}원\n`;
-
-            const benefits = calculateBenefits(totals.totalPrice, currentChannel);
-            text += `🎁 특전 포카: ${benefits.pcCount}매\n`;
-            if (benefits.luckyDrawCount > 0) {
-                text += `🍀 럭키드로우: ${benefits.luckyDrawCount}매\n`;
-            }
+            const benefits = calculateBenefits(totalPrice, currentChannel);
+            if (benefits.pcCount > 0) text += `🎁 특전 포카: ${benefits.pcCount}매\n`;
+            if (benefits.luckyDrawCount > 0) text += `🎰 럭키드로우: ${benefits.luckyDrawCount}매\n`;
 
             navigator.clipboard.writeText(text).then(() => {
-                showToast("내역이 클립보드에 복사되었습니다!");
-            }).catch(() => {
-                alert("복사 실패. 권한을 확인해주세요.");
+                showToast('구매 내역이 클립보드에 복사되었습니다!');
+            }).catch(err => {
+                alert('복사에 실패했습니다. 권한을 확인해주세요.');
             });
+        }
+
+        function openShippingModal() {
+            document.getElementById('shippingNoteInput').value = shippingNotes;
+            document.getElementById('shippingModal').classList.add('active');
+        }
+
+        function closeShippingModal() {
+            document.getElementById('shippingModal').classList.remove('active');
+        }
+
+        function saveShippingInfo() {
+            shippingNotes = document.getElementById('shippingNoteInput').value.trim();
+            closeShippingModal();
+            showToast('배송 일정 메모가 저장되었습니다!');
+            if (document.getElementById('summaryModal').classList.contains('active')) {
+                openModal();
+            }
+        }
+
+        function clearShippingInfo() {
+            shippingNotes = '';
+            document.getElementById('shippingNoteInput').value = '';
+            closeShippingModal();
+            showToast('배송 일정 메모가 초기화되었습니다.');
+            if (document.getElementById('summaryModal').classList.contains('active')) {
+                openModal();
+            }
+        }
+
+        function openProxyModal() {
+            document.getElementById('applicantName').value = proxyData.applicant;
+            document.getElementById('buyerName').value = proxyData.buyer;
+            document.getElementById('proxyModal').classList.add('active');
+        }
+
+        function closeProxyModal() {
+            document.getElementById('proxyModal').classList.remove('active');
+        }
+
+        function saveProxyInfo() {
+            proxyData.applicant = document.getElementById('applicantName').value.trim();
+            proxyData.buyer = document.getElementById('buyerName').value.trim();
+            closeProxyModal();
+            showToast('대리구매 정보가 적용되었습니다!');
+            if (document.getElementById('summaryModal').classList.contains('active')) {
+                openModal();
+            }
+        }
+
+        function clearProxyInfo() {
+            proxyData = { applicant: '', buyer: '' };
+            document.getElementById('applicantName').value = '';
+            document.getElementById('buyerName').value = '';
+            closeProxyModal();
+            showToast('대리구매 정보가 초기화되었습니다.');
+            if (document.getElementById('summaryModal').classList.contains('active')) {
+                openModal();
+            }
+        }
+
+        function openImageModal(imgSrc) {
+            document.getElementById('modalImg').src = imgSrc;
+            document.getElementById('imageModal').classList.add('active');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('active');
         }
 
         function showToast(msg) {
@@ -959,60 +1027,6 @@
             toast.innerText = msg;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        /* 🚚 배송 모달 제어 */
-        function openShippingModal() {
-            document.getElementById('shippingNoteInput').value = shippingNotes;
-            document.getElementById('shippingModal').classList.add('active');
-        }
-        function closeShippingModal() {
-            document.getElementById('shippingModal').classList.remove('active');
-        }
-        function saveShippingInfo() {
-            shippingNotes = document.getElementById('shippingNoteInput').value;
-            closeShippingModal();
-            showToast("배송 메모가 저장되었습니다.");
-        }
-        function clearShippingInfo() {
-            shippingNotes = '';
-            document.getElementById('shippingNoteInput').value = '';
-            closeShippingModal();
-            showToast("배송 메모가 초기화되었습니다.");
-        }
-
-        /* 🤝 대리구매 모달 제어 */
-        function openProxyModal() {
-            document.getElementById('applicantName').value = proxyData.applicant;
-            document.getElementById('buyerName').value = proxyData.buyer;
-            document.getElementById('proxyModal').classList.add('active');
-        }
-        function closeProxyModal() {
-            document.getElementById('proxyModal').classList.remove('active');
-        }
-        function saveProxyInfo() {
-            proxyData.applicant = document.getElementById('applicantName').value;
-            proxyData.buyer = document.getElementById('buyerName').value;
-            closeProxyModal();
-            updateModalContent();
-            showToast("대리구매 정보가 적용되었습니다.");
-        }
-        function clearProxyInfo() {
-            proxyData = { applicant: '', buyer: '' };
-            document.getElementById('applicantName').value = '';
-            document.getElementById('buyerName').value = '';
-            closeProxyModal();
-            updateModalContent();
-            showToast("대리구매 정보가 초기화되었습니다.");
-        }
-
-        /* 제품 이미지 미리보기 */
-        function openImageModal(imgSrc) {
-            document.getElementById('modalImg').src = imgSrc;
-            document.getElementById('imageModal').classList.add('active');
-        }
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.remove('active');
         }
     </script>
 </body>
