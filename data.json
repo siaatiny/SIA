@@ -8,7 +8,13 @@
    "imgs": [
     "images/mvnmun4i_mvnmun4id8f.jpg"
    ],
-   "bonus": null
+   "bonus": {
+    "name": "체리피스를 시켜보았다 VER. (3장 구매 시 4종 중 1종 랜덤 증정, 12장 구매 시 중복 X)",
+    "per": 3,
+    "pick": 1,
+    "types": [],
+    "goal": 0
+   }
   },
   {
    "id": "mvnmrpci",
