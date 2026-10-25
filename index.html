@@ -187,7 +187,7 @@ body.admin .admin-only.inline{display:flex}
 
 <script>
 const MEMBERS = ["홍중","성화","윤호","여상","산","민기","우영","종호"];
-const UNITS   = ["홍중&종호","성화&산","윤호&우영","여상&민기"];
+const UNITS   = ["홍중&종호","성화&산","윤호&우영","민기&여상"];
 const TYPES = [
   {id:"adz",  name:"(A/DIARY/Z)"},
   {id:"poca", name:"포카앨범"},
@@ -197,7 +197,6 @@ const TYPES = [
 const DEFAULT_FOLDERS = ["NU뮤직","애플뮤직","케이팝스토어","메이크스타","헬로라이브","YES24","사운드웨이브","muuve","점프업"]
   .map((n,i)=>({id:"d"+(i+1), name:n}));
 
-/* ===== 저장소 정보 ===== */
 const OVERRIDE_OWNER = "";   
 const OVERRIDE_REPO  = "";   
 const host = location.hostname;
@@ -237,7 +236,6 @@ const typeName = id => (TYPES.find(t=>t.id===id)||{}).name || "";
 function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 const folderOf = e => folders.some(f=>f.id===e.folder) ? e.folder : "_none";
 
-/* ===== GitHub API ===== */
 const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/`;
 function ghHeaders(){ return { "Authorization":"Bearer "+token, "Accept":"application/vnd.github+json" }; }
 const b64enc = s => btoa(unescape(encodeURIComponent(s)));
@@ -541,7 +539,7 @@ function bonusHTML(e){
   if(types.length && pick) lines.push(`전종 모으려면 최소 ${Math.ceil(types.length/pick)}세트 (앨범 ${Math.ceil(types.length/pick)*per}장), 랜덤이라 더 필요할 수 있어요`);
   const pct = goal ? Math.min(100, Math.round(sets/goal*100)) : 0;
   return `
-  <div class="bonus">
+  <div class="bonus" data-id="${e.id}">
     <div class="bonus-title">🎁 세트 특전 · ${esc(b.name || "세트 특전")} <span class="note">(세트 = 앨범 ${per}장${pick?`, ${pick}종 증정`:""})</span></div>
     <div class="counter">
       <button data-act="bminus">−</button>
@@ -671,20 +669,28 @@ function render(){
   updatePicBtn();
 }
 
-/* ===== 전체 클릭 이벤트 바인딩 (이 부분이 누락되어 작동하지 않았던 문제 해결) ===== */
 document.addEventListener("click", async e => {
   const actEl = e.target.closest("[data-act]");
   if(!actEl) return;
   const act = actEl.dataset.act;
 
-  // 폴더 접기/펼치기
   if(act === "ftoggle"){
     const fId = actEl.closest(".folder").dataset.fid;
     if(openFolders.has(fId)) openFolders.delete(fId);
     else openFolders.add(fId);
     saveOpen(); render();
   }
-  // 멤버 선택 토글 (O/X)
+  else if(act === "fselall"){
+    e.stopPropagation();
+    const fId = actEl.closest(".folder").dataset.fid;
+    const items = entries.filter(item => (fId === "_none" ? folderOf(item) === "_none" : item.folder === fId));
+    const allSelected = items.every(item => selected.has(item.id));
+    items.forEach(item => {
+      if(allSelected) selected.delete(item.id);
+      else selected.add(item.id);
+    });
+    render();
+  }
   else if(act === "toggle"){
     const entryId = actEl.closest(".entry").dataset.id;
     const m = actEl.dataset.m;
@@ -694,18 +700,15 @@ document.addEventListener("click", async e => {
     else mine[entryId].push(m);
     saveMine(); render();
   }
-  // 수정 버튼
   else if(act === "edit"){
     const entryId = actEl.closest(".entry").dataset.id;
     const item = entries.find(x => x.id === entryId);
     if(item) startEdit(item);
     render();
   }
-  // 수정 취소
   else if(act === "canceledit"){
     editState = null; render();
   }
-  // 수정 저장
   else if(act === "saveedit"){
     captureEdit();
     const item = entries.find(x => x.id === editState.id);
@@ -732,7 +735,6 @@ document.addEventListener("click", async e => {
     render();
     await persist("수정했어요!");
   }
-  // 삭제 버튼
   else if(act === "del"){
     const entryId = actEl.closest(".entry").dataset.id;
     if(!confirm("이 미공포 항목을 삭제할까요?")) return;
@@ -740,9 +742,81 @@ document.addEventListener("click", async e => {
     render();
     await persist("삭제했어요!");
   }
+  else if(act === "picsw"){
+    const entryId = actEl.closest(".entry").dataset.id;
+    if(openPics.has(entryId)) openPics.delete(entryId);
+    else openPics.add(entryId);
+    render();
+  }
+  else if(act === "zoom"){
+    const src = actEl.src;
+    const lb = $("#lightbox");
+    lb.querySelector("img").src = src;
+    lb.style.display = "flex";
+  }
+  else if(act === "bminus"){
+    const entryId = actEl.closest(".bonus").dataset.id;
+    if(!mineB[entryId]) mineB[entryId] = { sets:0, types:[] };
+    if(mineB[entryId].sets > 0) mineB[entryId].sets--;
+    saveMine(); render();
+  }
+  else if(act === "bplus"){
+    const entryId = actEl.closest(".bonus").dataset.id;
+    if(!mineB[entryId]) mineB[entryId] = { sets:0, types:[] };
+    mineB[entryId].sets++;
+    saveMine(); render();
+  }
+  else if(act === "btype"){
+    const entryId = actEl.closest(".bonus").dataset.id;
+    const i = +actEl.dataset.i;
+    if(!mineB[entryId]) mineB[entryId] = { sets:0, types:[] };
+    if(!mineB[entryId].types) mineB[entryId].types = [];
+    const idx = mineB[entryId].types.indexOf(i);
+    if(idx > -1) mineB[entryId].types.splice(idx, 1);
+    else mineB[entryId].types.push(i);
+    saveMine(); render();
+  }
+  else if(["imgl", "imgr", "imgdel", "imgrep"].includes(act)){
+    const i = +actEl.dataset.i;
+    if(act === "imgl" && i > 0){
+      const t = editState.imgs[i]; editState.imgs[i] = editState.imgs[i-1]; editState.imgs[i-1] = t;
+      refreshEditImgs();
+    } else if(act === "imgr" && i < editState.imgs.length - 1){
+      const t = editState.imgs[i]; editState.imgs[i] = editState.imgs[i+1]; editState.imgs[i+1] = t;
+      refreshEditImgs();
+    } else if(act === "imgdel"){
+      editState.imgs.splice(i, 1);
+      refreshEditImgs();
+    } else if(act === "imgrep"){
+      actEl.closest(".ed-thumb").querySelector(".rep-input").click();
+    }
+  }
 });
 
-// 탭 전환 처리
+document.addEventListener("change", e => {
+  if(e.target.matches("[data-act='sel']")){
+    const entryId = e.target.closest(".entry").dataset.id;
+    if(e.target.checked) selected.add(entryId);
+    else selected.delete(entryId);
+    render();
+  }
+  else if(e.target.matches(".ed-on")){
+    const fields = document.querySelector(".ed-fields");
+    if(fields) fields.style.display = e.target.checked ? "block" : "none";
+  }
+  else if(e.target.matches(".rep-input") && e.target.files.length){
+    const i = +e.target.dataset.i;
+    compress(e.target.files[0]).then(data => {
+      editState.imgs[i].data = data;
+      refreshEditImgs();
+    });
+  }
+});
+
+$("#lightbox").addEventListener("click", () => {
+  $("#lightbox").style.display = "none";
+});
+
 document.querySelectorAll(".tab").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -760,30 +834,46 @@ document.querySelectorAll(".tab").forEach(btn => {
 });
 
 function renderMatrix(){
-  // 내 체크표 매트릭스 렌더링
   const matrix = $("#matrix");
   if(!entries.length){
     matrix.innerHTML = `<div class="empty">등록된 미공포가 없어요.</div>`;
     return;
   }
-  let html = `<table><thead><tr><th>미공포명</th>` + MEMBERS.map(m=>`<th>${m}</th>`).join("") + `</tr></thead><tbody>`;
+  
+  // 일반 멤버들과 유닛을 모두 포함하는 컬럼 구성 혹은 유닛 분리 렌더링
+  let html = `<table><thead><tr><th>미공포명</th>` + 
+    MEMBERS.map(m=>`<th>${m}</th>`).join("") + 
+    UNITS.map(u=>`<th><small style="color:var(--sub)">유닛</small>${u}</th>`).join("") + 
+    `</tr></thead><tbody>`;
+
   entries.forEach(e => {
     const my = mine[e.id] || [];
-    html += `<tr><td><b>${esc(e.title)}</b></td>` + MEMBERS.map(m => {
-      const has = my.includes(m);
-      return `<td class="${has?'o':'x'}">${has?'O':'-'}</td>`;
-    }).join("") + `</tr>`;
+    const isUnit = e.type === "unit";
+    
+    html += `<tr><td><b>${esc(e.title)}</b></td>`;
+    
+    // 일반 멤버 열
+    MEMBERS.forEach(m => {
+      const has = !isUnit && my.includes(m);
+      html += `<td class="${has?'o':'x'}">${has?'O':(isUnit?'-':'-')}</td>`;
+    });
+
+    // 유닛 열
+    UNITS.forEach(u => {
+      const has = isUnit && my.includes(u);
+      html += `<td class="${has?'o':'x'}">${has?'O':(!isUnit?'-':'-')}</td>`;
+    });
+
+    html += `</tr>`;
   });
   html += `</tbody></table>`;
   matrix.innerHTML = html;
 }
 
-// 검색어 입력 시 실시간 렌더링
 document.addEventListener("input", e => {
   if(e.target && e.target.id === "search") render();
 });
 
-// 초기 로드 실행
 document.addEventListener("DOMContentLoaded", () => {
   loadData();
 });
