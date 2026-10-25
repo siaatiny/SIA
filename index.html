@@ -197,9 +197,9 @@ const TYPES = [
 const DEFAULT_FOLDERS = ["NU뮤직","애플뮤직","케이팝스토어","메이크스타","헬로라이브","YES24","사운드웨이브","muuve","점프업"]
   .map((n,i)=>({id:"d"+(i+1), name:n}));
 
-/* ===== 저장소 정보 (자동 인식. 안 맞으면 아래에 직접 입력) ===== */
-const OVERRIDE_OWNER = "";   // 예: "myid"
-const OVERRIDE_REPO  = "";   // 예: "photocard"
+/* ===== 저장소 정보 ===== */
+const OVERRIDE_OWNER = "";   
+const OVERRIDE_REPO  = "";   
 const host = location.hostname;
 const seg = location.pathname.split("/")[1];
 const OWNER = OVERRIDE_OWNER || (host.endsWith("github.io") ? host.split(".")[0] : "");
@@ -213,9 +213,9 @@ const OPEN_KEY  = "pc-openfolders";
 
 let folders = DEFAULT_FOLDERS.map(f=>({...f}));
 let entries = [];
-let editState = null;      // {id, imgs:[{path,data}], f:{...}}
-let previews = {};         // 방금 올린 사진 미리보기 (path -> dataURL)
-let selected = new Set();  // 폴더 이동용 선택
+let editState = null;      
+let previews = {};         
+let selected = new Set();  
 let showPics = localStorage.getItem(PIC_KEY) === "1";
 let openPics = new Set();
 let openFolders = new Set(); try { openFolders = new Set(JSON.parse(localStorage.getItem(OPEN_KEY)) || []); } catch(e){}
@@ -256,13 +256,6 @@ async function putFile(path, contentB64, message, sha){
   if(!r.ok) throw new Error("저장 실패 "+r.status);
   return r.json();
 }
-async function deleteFile(path){
-  try{
-    const f = await getFile(path);
-    if(!f) return;
-    await fetch(API+path, { method:"DELETE", headers: ghHeaders(), body: JSON.stringify({ message:"delete image", sha:f.sha }) });
-  }catch(e){}
-}
 async function saveData(){
   const clean = entries.map(({id,title,note,end,type,folder,imgs,bonus}) =>
     ({id,title,note:note||"",end:end||"",type:type||"",folder:folder||"",imgs:imgs||[],bonus:bonus||null}));
@@ -275,10 +268,9 @@ async function persist(okMsg){
   catch(err){ status("❌ "+err.message, 4000); }
 }
 
-/* ===== 데이터 불러오기 (예전 형식 자동 변환) ===== */
 function inferType(title){
   if(/디지팩\s*유닛/.test(title)) return "unit";
-  if(/포카\s*앨범/.test(title))   return "poca";
+  if(/포카\s*앨범/.test(title))    return "poca";
   if(/디지팩/.test(title))        return "digi";
   if(/A\s*\/\s*DIARY/i.test(title)) return "adz";
   return "";
@@ -310,7 +302,6 @@ async function loadData(){
   render();
 }
 
-/* ===== 이미지 압축 ===== */
 function compress(file, max=1000){
   return new Promise((res, rej)=>{
     const fr = new FileReader();
@@ -331,7 +322,6 @@ function compress(file, max=1000){
   });
 }
 
-/* ===== 관리자 로그인 ===== */
 function setAdmin(on){
   document.body.classList.toggle("admin", on);
   $("#loginBtn").textContent = on ? "🔓 관리자 로그아웃" : "🔑 관리자 로그인";
@@ -354,7 +344,6 @@ $("#loginBtn").addEventListener("click", async ()=>{
   }catch(e){ alert("토큰이 올바르지 않거나 이 저장소에 쓰기 권한이 없어요."); }
 });
 
-/* ===== 사진 보기 / 폴더 펼치기 토글 ===== */
 function updatePicBtn(){ $("#picToggle").textContent = showPics ? "📷 사진 모두 숨기기" : "📷 사진 모두 보기"; }
 $("#picToggle").addEventListener("click", ()=>{
   showPics = !showPics; openPics.clear();
@@ -368,7 +357,6 @@ $("#openAll").addEventListener("click", ()=>{
   saveOpen(); render();
 });
 
-/* ===== select 옵션 ===== */
 function folderOptions(sel){
   return `<option value="">미분류</option>` + folders.map(f=>`<option value="${esc(f.id)}" ${f.id===sel?"selected":""}>${esc(f.name)}</option>`).join("");
 }
@@ -380,7 +368,6 @@ function fillNewForm(){
   const ts = $("#newType");   if(!ts.options.length) ts.innerHTML = typeOptions("");
 }
 
-/* ===== 미공포 등록 (관리자) ===== */
 let pendingImgs = [];
 function renderNewThumbs(){
   $("#newThumbs").innerHTML = pendingImgs.map((d,i)=>`
@@ -423,7 +410,6 @@ $("#addBtn").addEventListener("click", async ()=>{
   btn.disabled = false;
 });
 
-/* ===== 폴더 관리 (관리자) ===== */
 function renderFolderMgr(){
   $("#folderList").innerHTML = folders.length ? folders.map(f=>{
     const n = entries.filter(e=>e.folder===f.id).length;
@@ -472,7 +458,6 @@ $("#autoBtn").addEventListener("click", async ()=>{
   saveOpen(); render(); await persist(`${plan.length}개를 분류했어요!`);
 });
 
-/* ===== 선택 → 폴더 이동 (관리자) ===== */
 function updateSelBar(){
   [...selected].forEach(id=>{ if(!entries.some(e=>e.id===id)) selected.delete(id); });
   const bar = $("#selbar");
@@ -493,7 +478,6 @@ $("#selMove").addEventListener("click", async ()=>{
   await persist(`${ids.length}개를 이동했어요!`);
 });
 
-/* ===== 수정 상태 ===== */
 function startEdit(item){
   const b = item.bonus || {};
   editState = {
@@ -545,7 +529,6 @@ function refreshEditImgs(){
   if(box) box.innerHTML = editImgsHTML();
 }
 
-/* ===== 화면 ===== */
 function bonusHTML(e){
   const b = e.bonus;
   if(!b) return "";
@@ -680,120 +663,18 @@ function render(){
             <span class="arrow">${open?"▲":"▼"}</span>
           </span>
         </div>
-        ${open ? `<div class="folder-body">${g.items.length ? g.items.map(cardHTML).join("") : `<div class="empty" style="padding:16px 0">비어 있어요.</div>`}</div>` : ""}
+        ${open ? `<div class="folder-body" style="display:flex;flex-direction:column;gap:14px">${g.items.map(cardHTML).join("")}</div>` : ""}
       </div>`;
     }).join("");
   }
   updateSelBar();
-  renderSummary();
+  updatePicBtn();
 }
 
-$("#entries").addEventListener("change", async e=>{
-  const t = e.target;
-  if(t.classList.contains("ed-on")){
-    t.closest(".editbox").querySelector(".ed-fields").style.display = t.checked ? "block" : "none";
-  } else if(t.classList.contains("add-input") && editState){
-    for(const f of t.files) editState.imgs.push({ path:null, data: await compress(f) });
-    t.value = ""; refreshEditImgs();
-  } else if(t.classList.contains("rep-input") && editState){
-    const f = t.files[0];
-    if(f){ editState.imgs[+t.dataset.i] = { path:null, data: await compress(f) }; refreshEditImgs(); }
-  }
+// 이벤트 핸들러 등록 및 초기화
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
 });
-
-$("#entries").addEventListener("click", async e=>{
-  const t = e.target.closest("[data-act]");
-  if(!t) return;
-  const act = t.dataset.act;
-
-  /* 폴더 헤더 */
-  if(act === "ftoggle" || act === "fselall"){
-    const fid = t.closest(".folder").dataset.fid;
-    if(act === "ftoggle"){
-      if(openFolders.has(fid)) openFolders.delete(fid); else openFolders.add(fid);
-      saveOpen(); render();
-    } else if(token){
-      const g = groups().gs.find(x=>x.id===fid);
-      if(g){
-        const all = g.items.every(i=>selected.has(i.id));
-        g.items.forEach(i => all ? selected.delete(i.id) : selected.add(i.id));
-        render();
-      }
-    }
-    return;
-  }
-
-  const card = t.closest(".entry");
-  if(!card) return;
-  const item = entries.find(x => x.id === card.dataset.id);
-  if(!item) return;
-
-  if(act === "sel"){
-    if(t.checked) selected.add(item.id); else selected.delete(item.id);
-    card.classList.toggle("sel", t.checked);
-    updateSelBar();
-  } else if(act === "toggle"){
-    const m = t.dataset.m;
-    const my = mine[item.id] || [];
-    mine[item.id] = my.includes(m) ? my.filter(x=>x!==m) : [...my, m];
-    saveMine(); render();
-  } else if(act === "picsw"){
-    if(openPics.has(item.id)) openPics.delete(item.id); else openPics.add(item.id);
-    render();
-  } else if(act === "bplus" || act === "bminus"){
-    const bm = mineB[item.id] || { sets:0, types:[] };
-    bm.sets = Math.max(0, (bm.sets||0) + (act==="bplus" ? 1 : -1));
-    mineB[item.id] = bm; saveMine(); render();
-  } else if(act === "btype"){
-    const bm = mineB[item.id] || { sets:0, types:[] };
-    const i = +t.dataset.i;
-    bm.types = (bm.types||[]).includes(i) ? bm.types.filter(x=>x!==i) : [...(bm.types||[]), i];
-    mineB[item.id] = bm; saveMine(); render();
-  } else if(act === "zoom"){
-    $("#lightbox img").src = srcOf(item.imgs[+t.dataset.i]); $("#lightbox").style.display = "flex";
-  } else if(!token){
-    return;
-  } else if(act === "edit"){
-    if(editState && editState.id === item.id) editState = null; else startEdit(item);
-    render();
-  } else if(act === "canceledit"){
-    editState = null; render();
-  } else if(act === "imgdel"){
-    editState.imgs.splice(+t.dataset.i, 1); refreshEditImgs();
-  } else if(act === "imgl" || act === "imgr"){
-    const i = +t.dataset.i, j = act === "imgl" ? i-1 : i+1;
-    if(j >= 0 && j < editState.imgs.length){
-      [editState.imgs[i], editState.imgs[j]] = [editState.imgs[j], editState.imgs[i]];
-      refreshEditImgs();
-    }
-  } else if(act === "imgrep"){
-    t.closest(".ed-thumb").querySelector(".rep-input").click();
-  } else if(act === "saveedit"){
-    captureEdit();
-    const f = editState.f;
-    const title = f.title.trim();
-    if(!title){ alert("미공포 이름을 입력해 주세요."); return; }
-    const st = editState;
-    const oldPaths = item.imgs.slice();
-    item.title = title;
-    item.note = f.note.trim();
-    item.end = f.end;
-    item.type = f.type;
-    item.folder = f.folder;
-    if(f.folder){ openFolders.add(f.folder); saveOpen(); }
-    if(f.on){
-      item.bonus = {
-        name: f.bname.trim(),
-        per:  Math.max(1, parseInt(f.per)  || 3),
-        pick: Math.max(0, parseInt(f.pick) || 0),
-        types: f.types.split(/[,\n]/).map(s=>s.trim()).filter(Boolean),
-        goal: Math.max(0, parseInt(f.goal) || 0)
-      };
-    } else item.bonus = null;
-
-    const btn = t; btn.disabled = true;
-    try{
-      const finalPaths = [];
-      const newCount = st.imgs.filter(im=>!im.path).length;
-      let done = 0;
-      for(const im of
+</script>
+</body>
+</html>
