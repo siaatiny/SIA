@@ -1,1033 +1,347 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ATEEZ MD 구매 계산기</title>
-    <!-- 이미지 저장용 html2canvas 라이브러리 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        :root {
-            --primary: #6c5ce7;
-            --primary-light: #a29bfe;
-            --bg: #f8f9fa;
-            --card-bg: #ffffff;
-            --text: #2d3436;
-            --text-sub: #636e72;
-            --border: #edf2f7;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            padding-bottom: 120px;
-        }
-
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .btn-header-action {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        header h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
-        header p { font-size: 0.85rem; opacity: 0.9; }
-
-        .container { max-width: 600px; margin: 0 auto; padding: 16px; }
-
-        /* 날짜 및 구매채널 선택 섹션 */
-        .date-picker-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 14px 16px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border: 1.5px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .picker-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .date-picker-label {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-        }
-
-        .date-picker-input, .time-picker-select {
-            border: 1px solid #cbd5e1;
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-            outline: none;
-            background-color: white;
-        }
-
-        .time-picker-select {
-            max-width: 65%;
-            text-overflow: ellipsis;
-        }
-
-        /* 온/오프라인 스위치 토글 */
-        .channel-toggle-group {
-            display: flex;
-            background: #f1f2f6;
-            padding: 3px;
-            border-radius: 10px;
-        }
-
-        .channel-btn {
-            border: none;
-            background: transparent;
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text-sub);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .channel-btn.active {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .item-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 14px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border: 1.5px solid #edf2f7;
-            transition: all 0.2s ease;
-        }
-
-        .item-card.has-selection {
-            border-color: var(--primary);
-            background-color: #fcfbff;
-        }
-
-        .item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .item-name {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 4px;
-            display: inline-block;
-        }
-
-        .item-name.clickable {
-            cursor: pointer;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-            text-decoration-color: rgba(0,0,0,0.2);
-        }
-
-        .item-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .item-price { font-weight: 700; color: var(--primary); font-size: 0.95rem; }
-        .item-limit { background: #f1f2f6; color: var(--text-sub); padding: 2px 6px; border-radius: 6px; font-size: 0.75rem; }
-        .item-total-badge { font-size: 0.85rem; font-weight: 700; color: var(--primary); background: #f0edff; padding: 4px 8px; border-radius: 8px; }
-
-        .member-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-top: 8px;
-            padding-top: 12px;
-            border-top: 1px dashed var(--border);
-        }
-
-        .member-box {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 6px;
-            text-align: center;
-        }
-
-        .member-box.active { background: #f0edff; border-color: var(--primary-light); }
-        .member-name { font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
-        .member-box.active .member-name { color: var(--primary); }
-
-        .counter-sm { display: flex; align-items: center; justify-content: center; gap: 2px; }
-        .counter-sm button {
-            width: 24px; height: 24px; border: none; background: white; color: var(--text);
-            border-radius: 6px; font-size: 0.9rem; font-weight: bold; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .counter-sm span { width: 18px; font-size: 0.8rem; font-weight: 700; }
-
-        .simple-counter-wrapper {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-top: 8px; padding-top: 10px; border-top: 1px dashed var(--border);
-        }
-        .simple-label { font-size: 0.85rem; color: var(--text-sub); font-weight: 600; }
-        .counter-lg { display: flex; align-items: center; background: #f1f2f6; border-radius: 10px; padding: 3px; }
-        .counter-lg button {
-            width: 32px; height: 32px; border: none; background: white; color: var(--text);
-            border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .counter-lg span { width: 36px; text-align: center; font-weight: 700; font-size: 0.95rem; }
-
-        .bottom-bar {
-            position: fixed; bottom: 0; left: 0; right: 0; background: white;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.08); padding: 16px 20px;
-            border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 100;
-        }
-
-        .bottom-content { max-width: 600px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-        .total-container { display: flex; flex-direction: column; }
-        .total-label { font-size: 0.8rem; color: var(--text-sub); }
-        .total-amount { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
-
-        .btn-group { display: flex; gap: 8px; }
-        .btn { border: none; padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
-        .btn-reset { background: #f1f2f6; color: var(--text-sub); }
-        .btn-summary { background: #f0edff; color: var(--primary); }
-        .btn-copy { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .btn-save { background: #2ed573; color: white; box-shadow: 0 4px 12px rgba(46, 213, 115, 0.3); }
-        .btn-proxy { background: #ff9f43; color: white; box-shadow: 0 4px 12px rgba(255, 159, 67, 0.3); }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center;
-            z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.25s ease; padding: 20px;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-
-        .modal-container {
-            background: white; width: 100%; max-width: 500px; max-height: 85vh;
-            border-radius: 20px; display: flex; flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); overflow: hidden;
-        }
-
-        .modal-header { padding: 18px 20px; background: #f8f9fa; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-        .modal-close { background: none; border: none; font-size: 1.3rem; color: var(--text-sub); cursor: pointer; }
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-        
-        .modal-info-badge {
-            background: #eef2ff;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
-            color: #334155;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .summary-item { padding: 12px 0; border-bottom: 1px dashed var(--border); }
-        .summary-item:last-child { border-bottom: none; }
-        .summary-item-title { font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-        .summary-item-details { font-size: 0.85rem; color: var(--text-sub); display: flex; justify-content: space-between; }
-        .summary-empty { text-align: center; padding: 40px 0; color: var(--text-sub); font-size: 0.95rem; }
-        
-        .modal-footer { padding: 16px 20px; background: #f8f9fa; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
-        .modal-total-box { display: flex; justify-content: space-between; align-items: center; background: #f0edff; padding: 12px 16px; border-radius: 12px; }
-        .modal-total-label { font-size: 0.9rem; font-weight: 700; color: var(--text); }
-        .modal-total-val { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
-
-        /* 특전 영역 스타일 */
-        .event-benefits-area {
-            background-color: #fff8f8;
-            border: 1px solid #ffe0e0;
-            padding: 12px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .benefit-line {
-            font-size: 0.85rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .benefit-line.primary { color: #e63946; }
-        .benefit-line.secondary { color: #2a9d8f; }
-        .benefit-sub {
-            font-size: 0.78rem;
-            color: #718096;
-            margin-top: -2px;
-        }
-
-        .shipping-info-box {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--primary);
-        }
-        .shipping-info-box h4 { font-size: 0.95rem; margin-bottom: 8px; color: var(--text); }
-        .shipping-info-box p { font-size: 0.85rem; line-height: 1.5; color: #475569; margin-bottom: 4px; }
-        .shipping-info-box ul { padding-left: 18px; font-size: 0.82rem; color: #475569; line-height: 1.5; }
-
-        .proxy-form-group { margin-bottom: 14px; }
-        .proxy-form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-        .proxy-form-group input, .proxy-form-group textarea {
-            width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; outline: none;
-        }
-
-        .toast {
-            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
-            background: rgba(45, 52, 54, 0.9); color: white; padding: 10px 20px;
-            border-radius: 20px; font-size: 0.85rem; opacity: 0; transition: opacity 0.3s ease;
-            pointer-events: none; z-index: 3000;
-        }
-        .toast.show { opacity: 1; }
-        .save-tip { text-align: center; font-size: 0.85rem; color: #ff4757; font-weight: bold; margin-bottom: 10px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미공포 분철 목록</title>
+<style>
+:root{
+  --bg:#f4f4f6; --card:#fff; --text:#1c1c22; --sub:#777; --line:#e2e2e8;
+  --accent:#2d2d35; --on:#ff5c8a; --on-text:#fff;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#16161a; --card:#212127; --text:#f1f1f4; --sub:#9a9aa5; --line:#34343c; --accent:#e8e8ee; --on:#ff6b96; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.5}
+header{padding:20px 16px 8px;max-width:900px;margin:0 auto}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--sub);font-size:13px}
+main{max-width:900px;margin:0 auto;padding:8px 16px 80px}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tab{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;font-size:14px;cursor:pointer}
+.tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.box h2{margin:0 0 10px;font-size:15px}
+input[type=text],input[type=date],input[type=search]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:8px}
+button{font-family:inherit}
+.btn{padding:10px 14px;border:none;border-radius:8px;background:var(--accent);color:var(--bg);font-size:14px;cursor:pointer}
+.btn:disabled{opacity:.5}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.small{padding:6px 10px;font-size:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.preview{max-width:100%;max-height:240px;border-radius:8px;margin:6px 0;display:none}
+.entry-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.entry-title{font-weight:700;font-size:16px;word-break:keep-all}
+.entry-date{color:var(--sub);font-size:12px}
+.entry img{width:100%;border-radius:10px;margin:10px 0;display:block;cursor:zoom-in}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--sub);font-size:14px;cursor:pointer;user-select:none}
+.chip b{margin-left:4px}
+.chip.on{background:var(--on);border-color:var(--on);color:var(--on-text);font-weight:700}
+.empty{text-align:center;color:var(--sub);padding:40px 0;font-size:14px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:center}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);min-width:130px}
+td.o{color:var(--on);font-weight:800}
+td.x{color:var(--sub)}
+tfoot td{font-weight:700;color:var(--sub)}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.stat{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+#lightbox img{max-width:100%;max-height:100%;border-radius:8px}
+.note{font-size:12px;color:var(--sub);margin-top:6px}
+#status{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--accent);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13px;display:none;z-index:10}
+footer{text-align:center;margin-top:30px}
+.admin-only{display:none}
+body.admin .admin-only{display:block}
+body.admin .admin-only.inline{display:inline-block}
+</style>
 </head>
 <body>
+<header>
+  <h1>🏴‍☠️ 미공포 분철 목록</h1>
+  <p>탑승한 멤버를 눌러 O / X 로 표시하세요. 내 선택은 이 브라우저에 자동 저장돼요.</p>
+</header>
+<main>
+  <div class="tabs">
+    <button class="tab active" data-tab="list">📋 미공포 목록</button>
+    <button class="tab" data-tab="sum">✅ 내 체크표</button>
+  </div>
 
-    <header>
-        <div class="header-top">
-            <button class="btn-header-action" onclick="openShippingModal()">🚚 배송 일정</button>
-            <button class="btn-header-action" onclick="openModal()">📋 내역 보기</button>
-        </div>
-        <h1 id="calcTitle">에이티즈 8주년 MD 계산기</h1>
-        <p>구매 수량을 간편하게 계산해보세요!</p>
-    </header>
-
-    <!-- MD 계산기 화면 -->
-    <div id="calcTabSection" class="container">
-        <!-- 📅 날짜 & ⏰ 시간 & 🌐 온/오프라인 선택 카드 -->
-        <div class="date-picker-card">
-            <div class="picker-row">
-                <span class="date-picker-label">📅 구매/방문 예정일</span>
-                <input type="date" id="visitDate" class="date-picker-input" onchange="updateDateDisplay()">
-            </div>
-            <div class="picker-row">
-                <span class="date-picker-label">⏰ 방문 시간대</span>
-                <select id="visitTime" class="time-picker-select" onchange="updateDateDisplay()">
-                    <option value="">미선택</option>
-                </select>
-            </div>
-            <div class="picker-row">
-                <span class="date-picker-label">🛒 구매 방식</span>
-                <div class="channel-toggle-group">
-                    <button id="btnOnline" class="channel-btn active" onclick="setChannel('온라인')">온라인</button>
-                    <button id="btnOffline" class="channel-btn" onclick="setChannel('오프라인')">오프라인</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="itemList"></div>
+  <section id="view-list">
+    <!-- 관리자 전용: 미공포 등록 -->
+    <div class="box admin-only" id="addBox">
+      <h2>새 미공포 등록 (관리자)</h2>
+      <input type="text" id="newTitle" placeholder="예) 헬로라이브(볼찌빵VER.) 26.11.08 팬싸인회 미공개 포카">
+      <input type="date" id="newDate">
+      <input type="file" id="newImg" accept="image/*">
+      <img id="newPreview" class="preview" alt="">
+      <div class="row" style="margin-top:8px">
+        <button class="btn" id="addBtn">등록하기</button>
+      </div>
     </div>
 
-    <!-- 하단 금액 및 액션 바 -->
-    <div class="bottom-bar">
-        <div class="bottom-content">
-            <div class="total-container">
-                <span class="total-label" id="totalCount">총 0개 선택</span>
-                <span class="total-amount" id="totalPrice">0원</span>
-            </div>
-            <div class="btn-group">
-                <button class="btn btn-reset" onclick="resetAll()">초기화</button>
-                <button class="btn btn-summary" onclick="openModal()">구매 내역</button>
-                <button class="btn btn-copy" onclick="copySummary()">복사</button>
-            </div>
-        </div>
+    <input type="search" id="search" placeholder="🔍 미공포 검색">
+    <div id="entries"></div>
+  </section>
+
+  <section id="view-sum" style="display:none">
+    <div class="box">
+      <h2>내 탑승 현황</h2>
+      <div class="stats" id="stats"></div>
+      <div class="tablewrap" id="matrix"></div>
     </div>
+  </section>
 
-    <!-- 📋 구매 내역 팝업 모달 -->
-    <div class="modal-overlay" id="summaryModal" onclick="closeModalOnOverlay(event)">
-        <div class="modal-container" id="modalCaptureArea">
-            <div class="modal-header">
-                <div class="modal-title">📋 나의 MD 구매 내역</div>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
+  <footer>
+    <button class="btn ghost small" id="loginBtn">🔑 관리자 로그인</button>
+  </footer>
+</main>
 
-            <div class="modal-body" id="modalBodyContainer">
-                <div class="modal-info-badge" id="modalInfoBadge">
-                    <div>📌 구매 방식: <strong id="modalChannelText">온라인</strong></div>
-                    <div>📅 방문 예정일: <strong id="modalVisitDateText">미선택</strong></div>
-                    <div>⏰ 방문 시간대: <strong id="modalVisitTimeText">미선택</strong></div>
-                    <div id="modalShippingText" style="display: none;">🚚 배송 일정 메모: <strong id="modalShippingNotes"></strong></div>
-                    <div id="modalProxyText" style="display: none;">🤝 대리구매: <strong id="modalProxyNames"></strong></div>
-                </div>
+<div id="lightbox"><img alt=""></div>
+<div id="status"></div>
 
-                <div id="modalBody"></div>
-            </div>
+<script>
+const MEMBERS = ["홍중","성화","윤호","여상","산","민기","우영","종호"];
 
-            <div class="modal-footer" id="modalFooterArea">
-                <div class="modal-total-box">
-                    <span class="modal-total-label" id="modalTotalCount">총 0개 선택</span>
-                    <span class="modal-total-val" id="modalTotalPrice">0원</span>
-                </div>
+/* ===== 저장소 정보 (자동 인식. 안 맞으면 아래에 직접 입력) ===== */
+const OVERRIDE_OWNER = "";   // 예: "myid"
+const OVERRIDE_REPO  = "";   // 예: "photocard"
+const host = location.hostname;
+const seg = location.pathname.split("/")[1];
+const OWNER = OVERRIDE_OWNER || (host.endsWith("github.io") ? host.split(".")[0] : "");
+const REPO  = OVERRIDE_REPO  || ((seg && seg !== "index.html") ? seg : host);
 
-                <!-- 🎁 구매 방식 및 금액 맞춤 특전 표시 영역 -->
-                <div class="event-benefits-area" id="eventBenefitsArea">
-                    <div id="benefitPhotocardText" class="benefit-line primary"></div>
-                    <div id="benefitLuckyDrawText" class="benefit-line secondary" style="display: none;"></div>
-                    <div id="benefitNextTierText" class="benefit-sub"></div>
-                </div>
+const TOKEN_KEY = "pc-admin-token";
+const MINE_KEY  = "pc-mine-v2";
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                    <button class="btn btn-proxy" onclick="openProxyModal()">🤝 대리구매 신청</button>
-                    <button class="btn btn-save" onclick="saveAsImage()">📸 이미지 저장</button>
-                    <button class="btn btn-copy" onclick="copySummary()">내역 복사</button>
-                    <button class="btn btn-reset" onclick="closeModal()">닫기</button>
-                </div>
-            </div>
+let entries = [];
+let token = localStorage.getItem(TOKEN_KEY) || "";
+let mine = {};
+try { mine = JSON.parse(localStorage.getItem(MINE_KEY)) || {}; } catch(e){}
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function saveMine(){ localStorage.setItem(MINE_KEY, JSON.stringify(mine)); }
+function status(msg, ms){
+  const s = $("#status"); s.textContent = msg; s.style.display = msg ? "block" : "none";
+  if(ms) setTimeout(()=> s.style.display = "none", ms);
+}
+
+/* ===== GitHub API ===== */
+const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/`;
+function ghHeaders(){ return { "Authorization":"Bearer "+token, "Accept":"application/vnd.github+json" }; }
+const b64enc = s => btoa(unescape(encodeURIComponent(s)));
+const b64dec = s => decodeURIComponent(escape(atob(s.replace(/\n/g,""))));
+
+async function getFile(path){
+  const r = await fetch(API+path+"?t="+Date.now(), { headers: ghHeaders() });
+  if(r.status === 404) return null;
+  if(!r.ok) throw new Error("GitHub 오류 "+r.status);
+  return r.json();
+}
+async function putFile(path, contentB64, message, sha){
+  const body = { message, content: contentB64 };
+  if(sha) body.sha = sha;
+  const r = await fetch(API+path, { method:"PUT", headers: ghHeaders(), body: JSON.stringify(body) });
+  if(!r.ok) throw new Error("저장 실패 "+r.status);
+  return r.json();
+}
+async function deleteFile(path){
+  try{
+    const f = await getFile(path);
+    if(!f) return;
+    await fetch(API+path, { method:"DELETE", headers: ghHeaders(), body: JSON.stringify({ message:"delete image", sha:f.sha }) });
+  }catch(e){}
+}
+async function saveData(){
+  const clean = entries.map(({id,title,date,img}) => ({id,title,date,img}));
+  const cur = await getFile("data.json");
+  await putFile("data.json", b64enc(JSON.stringify({entries:clean}, null, 1)), "update data", cur && cur.sha);
+}
+
+/* ===== 데이터 불러오기 ===== */
+async function loadData(){
+  try{
+    if(token && OWNER){
+      const f = await getFile("data.json");
+      entries = f ? (JSON.parse(b64dec(f.content)).entries || []) : [];
+    } else {
+      const r = await fetch("data.json?t="+Date.now());
+      entries = r.ok ? ((await r.json()).entries || []) : [];
+    }
+  }catch(e){ entries = []; }
+  render();
+}
+
+/* ===== 이미지 압축 ===== */
+function compress(file, max=1000){
+  return new Promise((res, rej)=>{
+    const fr = new FileReader();
+    fr.onerror = rej;
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = rej;
+      img.onload = () => {
+        const r = Math.min(1, max/Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width*r); c.height = Math.round(img.height*r);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL("image/jpeg", .85));
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ===== 관리자 로그인 ===== */
+function setAdmin(on){
+  document.body.classList.toggle("admin", on);
+  $("#loginBtn").textContent = on ? "🔓 관리자 로그아웃" : "🔑 관리자 로그인";
+  render();
+}
+$("#loginBtn").addEventListener("click", async ()=>{
+  if(token){
+    token = ""; localStorage.removeItem(TOKEN_KEY); setAdmin(false); loadData(); return;
+  }
+  if(!OWNER){ alert("GitHub Pages 주소에서 접속해야 로그인할 수 있어요."); return; }
+  const t = prompt("GitHub 토큰(Personal Access Token)을 입력하세요");
+  if(!t) return;
+  try{
+    const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}`, { headers:{ "Authorization":"Bearer "+t.trim(), "Accept":"application/vnd.github+json" } });
+    const j = await r.json();
+    if(!r.ok || !j.permissions || !j.permissions.push) throw 0;
+    token = t.trim(); localStorage.setItem(TOKEN_KEY, token);
+    setAdmin(true); loadData();
+  }catch(e){ alert("토큰이 올바르지 않거나 이 저장소에 쓰기 권한이 없어요."); }
+});
+
+/* ===== 미공포 등록 (관리자) ===== */
+let pendingImg = "";
+$("#newImg").addEventListener("change", async e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  pendingImg = await compress(f);
+  const p = $("#newPreview"); p.src = pendingImg; p.style.display = "block";
+});
+$("#addBtn").addEventListener("click", async ()=>{
+  const title = $("#newTitle").value.trim();
+  if(!title){ alert("미공포 이름을 입력해 주세요."); return; }
+  const btn = $("#addBtn"); btn.disabled = true; status("저장 중...");
+  try{
+    const id = Date.now().toString(36);
+    let img = "";
+    if(pendingImg){
+      img = "images/"+id+".jpg";
+      await putFile(img, pendingImg.split(",")[1], "add image");
+    }
+    entries.unshift({ id, title, date: $("#newDate").value, img, _p: pendingImg });
+    await saveData();
+    $("#newTitle").value = ""; $("#newDate").value = ""; $("#newImg").value = "";
+    pendingImg = ""; $("#newPreview").style.display = "none";
+    render(); status("✅ 저장됐어요! (사이트 반영까지 1~2분 걸려요)", 4000);
+  }catch(e){ status("❌ "+e.message, 4000); }
+  btn.disabled = false;
+});
+
+/* ===== 화면 ===== */
+function render(){
+  const q = $("#search").value.trim().toLowerCase();
+  const list = entries.filter(e => e.title.toLowerCase().includes(q));
+  const box = $("#entries");
+  if(!list.length){
+    box.innerHTML = `<div class="empty">${entries.length ? "검색 결과가 없어요." : "아직 등록된 미공포가 없어요."}</div>`;
+  } else {
+    box.innerHTML = list.map(e => {
+      const my = mine[e.id] || [];
+      const src = e._p || e.img;
+      return `
+      <div class="box entry" data-id="${e.id}">
+        <div class="entry-head">
+          <div>
+            <div class="entry-title">${esc(e.title)}</div>
+            ${e.date ? `<div class="entry-date">${esc(e.date)}</div>` : ""}
+          </div>
+          <div class="row admin-only inline">
+            <button class="btn ghost small" data-act="rename">수정</button>
+            <button class="btn ghost small" data-act="del">삭제</button>
+          </div>
         </div>
-    </div>
-
-    <!-- 🚚 배송 일정 작성 및 공식 일정 안내 모달 -->
-    <div class="modal-overlay" id="shippingModal">
-        <div class="modal-container" style="max-width: 400px;">
-            <div class="modal-header">
-                <div class="modal-title">🚚 판매 및 배송 일정 안내</div>
-                <button class="modal-close" onclick="closeShippingModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="shipping-info-box">
-                    <h4>📢 판매 및 배송 안내</h4>
-                    <p><strong>판매처:</strong> KQ SHOP (<a href="https://kqshop.kr" target="_blank" style="color:var(--primary); font-weight:600;">kqshop.kr</a>)</p>
-                    <p><strong>판매기간:</strong><br>2026. 10. 01 (THU) 13:00 ~ 2026. 10. 11 (SUN) 21:00 (KST)</p>
-                    <hr style="border:0; border-top:1px dashed #cbd5e1; margin:8px 0;">
-                    <p><strong>🚚 배송 일정:</strong></p>
-                    <ul>
-                        <li><strong>PHOTOBOOK Blue Drift:</strong><br>2026.10.12 (MON)부터 순차 발송</li>
-                        <li><strong>PLUSH SEA COLLECTION을 제외한 MD:</strong><br>2026.11. 셋째주부터 순차 발송</li>
-                        <li><strong>PLUSH SEA COLLECTION:</strong><br>2026.11. 말부터 순차 발송</li>
-                    </ul>
-                </div>
-                <div class="proxy-form-group">
-                    <label for="shippingNoteInput">📝 개인 배송 관련 메모 (선택)</label>
-                    <textarea id="shippingNoteInput" rows="3" placeholder="예: 1차 예약 구매 건 / 주소지 변경 필요"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer" style="flex-direction: row; gap: 8px;">
-                <button class="btn btn-reset" style="flex: 1;" onclick="clearShippingInfo()">초기화</button>
-                <button class="btn btn-copy" style="flex: 1.5;" onclick="saveShippingInfo()">저장하기</button>
-            </div>
+        ${src ? `<img src="${src}" alt="${esc(e.title)}" data-act="zoom">` : ""}
+        <div class="chips">
+          ${MEMBERS.map(m => { const on = my.includes(m);
+            return `<span class="chip ${on?'on':''}" data-act="toggle" data-m="${m}">${m}<b>${on?'O':'X'}</b></span>`; }).join("")}
         </div>
-    </div>
-
-    <!-- 🤝 대리구매 요청 작성 모달 -->
-    <div class="modal-overlay" id="proxyModal">
-        <div class="modal-container" style="max-width: 360px;">
-            <div class="modal-header">
-                <div class="modal-title">🤝 대리구매 요청 정보</div>
-                <button class="modal-close" onclick="closeProxyModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="proxy-form-group">
-                    <label for="applicantName">신청자 이름 / 닉네임</label>
-                    <input type="text" id="applicantName" placeholder="예: 에이티니">
-                </div>
-                <div class="proxy-form-group">
-                    <label for="buyerName">대리구매자 이름 / 닉네임</label>
-                    <input type="text" id="buyerName" placeholder="예: 에이티즈">
-                </div>
-            </div>
-            <div class="modal-footer" style="flex-direction: row; gap: 8px;">
-                <button class="btn btn-reset" style="flex: 1;" onclick="clearProxyInfo()">초기화</button>
-                <button class="btn btn-copy" style="flex: 1.5;" onclick="saveProxyInfo()">적용하기</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 📸 이미지 저장 결과 모달 -->
-    <div class="modal-overlay" id="resultImageModal" onclick="closeResultImageModal()">
-        <div style="position: relative; max-width: 90%; max-height: 85vh; background: white; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; align-items: center;" onclick="event.stopPropagation()">
-            <button onclick="closeResultImageModal()" style="position: absolute; top: 10px; right: 14px; background: none; border: none; color: #333; font-size: 1.5rem; cursor: pointer; font-weight: bold; z-index: 10;">&times;</button>
-            <div class="save-tip">💡 이미지를 꾹 누르면 '사진 앱에 저장'이 가능합니다!</div>
-            <div style="overflow-y: auto; max-height: 70vh; width: 100%; border-radius: 8px;">
-                <img id="resultImg" src="" alt="구매 내역 이미지" style="width: 100%; display: block;">
-            </div>
-            <button class="btn btn-reset" onclick="closeResultImageModal()" style="margin-top: 12px; width: 100%;">닫기</button>
-        </div>
-    </div>
-
-    <!-- 제품 이미지 미리보기 모달 -->
-    <div class="modal-overlay" id="imageModal" onclick="closeImageModal()">
-        <div style="position: relative; max-width: 90%; max-height: 80vh;" onclick="event.stopPropagation()">
-            <button onclick="closeImageModal()" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 2rem; cursor: pointer; font-weight: bold;">&times;</button>
-            <img id="modalImg" src="" alt="제품 이미지" style="width: 100%; max-height: 80vh; object-fit: contain; border-radius: 12px; display: block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        </div>
-    </div>
-
-    <div class="toast" id="toast">내역이 복사되었습니다!</div>
-
-    <script>
-        const members = ['홍중', '성화', '윤호', '여상', '산', '민기', '우영', '종호'];
-
-        const dataAniteez = [
-            { id: 0, name: '포토북 블루 드리프트', limit: '1TYPE 포토카드', price: 38000, hasMembers: false, img: 'BLUEPTB.png' },
-            { id: 1, name: '목걸이', limit: '8TYPE, 포토카드(1EA)', price: 32000, hasMembers: false, img: 'EIGHTNECK.png' },
-            { id: 2, name: '리미티드 퍼퓸', limit: '종류무관 1개 / 해외 배송 불가', price: 58000, hasMembers: true, img: 'LIMITEDPERFUME.png' },
-            { id: 3, name: '플러시 SEA COLLECTION', limit: '8TYPE, 포토카드(1EA)', price: 28000, hasMembers: true, img: 'SEACOLLECTION.png' },
-            { id: 4, name: '럭키 피시 참', limit: '8TYPE', price: 13000, hasMembers: true, img: 'LUCKYFISH.png' },
-            { id: 5, name: '랜덤 트레카(포토카드 팩)', limit: '5EA OF 44EA', price: 8000, hasMembers: false, img: 'TREKAEIGHTMD.png' },
-            { id: 6, name: '8주년 담요', limit: '1TYPE, 포토카드(1EA)', price: 56000, hasMembers: false, img: 'BLANKET.png' },
-            { id: 7, name: '클리어 쇼퍼 백', limit: '포토카드(RANDOM 1EA OF 8EA)', price: 15000, hasMembers: false, img: 'CLEARBAGMD.png' },
-            { id: 8, name: '(가챠) LED SIGN 마그넷', limit: '8TYPE', price: 12000, hasMembers: false, img: 'LEDMAGNET.png' },
-            { id: 9, name: '(가챠) 케이블 프로텍터 피규어', limit: '8TYPE', price: 12000, hasMembers: false, img: 'CABLEPRO.png' },
-            { id: 10, name: '(가챠) 립 캡 키링', limit: '8TYPE', price: 12000, hasMembers: false, img: 'LIPCAP.png' },
-            { id: 11, name: '(가챠) 미니 파우치', limit: '8TYPE', price: 12000, hasMembers: false, img: 'EIGHTPOUCH.png' },
-        ];
-
-        let state = {};
-        let proxyData = { applicant: '', buyer: '' };
-        let currentChannel = '온라인';
-        let shippingNotes = '';
-
-        const today = new Date().toISOString().split('T')[0];
-
-        window.onload = function() {
-            document.getElementById('visitDate').value = today;
-            initTimeOptions();
-            initData();
-            render();
-        };
-
-        /* 11:00부터 21:00까지 30분 간격으로 20개 회차 옵션 자동 생성 */
-        function initTimeOptions() {
-            const timeSelect = document.getElementById('visitTime');
-            let startMinutes = 11 * 60; // 11:00 AM (minutes)
-
-            for (let i = 1; i <= 20; i++) {
-                const startH = Math.floor(startMinutes / 60);
-                const startM = startMinutes % 60;
-                const endMinutes = startMinutes + 30;
-                const endH = Math.floor(endMinutes / 60);
-                const endM = endMinutes % 60;
-
-                const startStr = `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`;
-                const endStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
-                const label = `${i}회차 (${startStr} ~ ${endStr})`;
-
-                const option = document.createElement('option');
-                option.value = label;
-                option.textContent = label;
-                timeSelect.appendChild(option);
-
-                startMinutes += 30;
-            }
-        }
-
-        function initData() {
-            state = {};
-            dataAniteez.forEach(item => {
-                if (item.hasMembers) {
-                    state[item.id] = {};
-                    members.forEach(m => state[item.id][m] = 0);
-                } else {
-                    state[item.id] = 0;
-                }
-            });
-            updateDateDisplay();
-        }
-
-        function updateDateDisplay() {
-            const dateVal = document.getElementById('visitDate').value;
-            const timeVal = document.getElementById('visitTime').value;
-
-            document.getElementById('modalVisitDateText').innerText = dateVal || '미선택';
-            document.getElementById('modalVisitTimeText').innerText = timeVal || '미선택';
-        }
-
-        function setChannel(channel) {
-            currentChannel = channel;
-            document.getElementById('btnOnline').classList.toggle('active', channel === '온라인');
-            document.getElementById('btnOffline').classList.toggle('active', channel === '오프라인');
-            render();
-        }
-
-        function updateQuantity(itemId, member, delta) {
-            if (member) {
-                const current = state[itemId][member] || 0;
-                const updated = Math.max(0, current + delta);
-                state[itemId][member] = updated;
-            } else {
-                const current = state[itemId] || 0;
-                const updated = Math.max(0, current + delta);
-                state[itemId] = updated;
-            }
-            render();
-        }
-
-        function getItemTotalCount(itemId) {
-            const item = dataAniteez.find(i => i.id === itemId);
-            if (item.hasMembers) {
-                return Object.values(state[itemId]).reduce((a, b) => a + b, 0);
-            }
-            return state[itemId] || 0;
-        }
-
-        function calculateOverallTotal() {
-            let totalCount = 0;
-            let totalPrice = 0;
-
-            dataAniteez.forEach(item => {
-                const count = getItemTotalCount(item.id);
-                totalCount += count;
-                totalPrice += count * item.price;
-            });
-
-            return { totalCount, totalPrice };
-        }
-
-        /* 특전 정보 산출 함수 */
-        function calculateBenefits(price, channel) {
-            let pcCount = 0;
-            let luckyDrawCount = 0;
-            let needSns = false;
-            let nextTierText = '';
-
-            if (channel === '온라인') {
-                pcCount = Math.floor(price / 50000);
-                const remain = 50000 - (price % 50000);
-                if (price > 0 && remain < 50000) {
-                    nextTierText = `💡 ${(remain).toLocaleString()}원 더 구매 시 포토카드 1매 추가 증정`;
-                } else if (price === 0) {
-                    nextTierText = `💡 50,000원 구매 시 포토카드 1매 증정`;
-                }
-            } else {
-                // 오프라인 특전 로직
-                if (price >= 160000) {
-                    pcCount = 3;
-                    luckyDrawCount = 4;
-                    needSns = true;
-                } else if (price >= 100000) {
-                    pcCount = 2;
-                    luckyDrawCount = 2;
-                    needSns = true;
-                    const remain = 160000 - price;
-                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 시 포카 3매 + 럭드 4매 (SNS 인증 필요)`;
-                } else if (price >= 80000) {
-                    pcCount = 1;
-                    luckyDrawCount = 2;
-                    needSns = true;
-                    const remain = 100000 - price;
-                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 시 포카 2매 + 럭드 2매 (SNS 인증 필요)`;
-                } else if (price >= 50000) {
-                    pcCount = 1;
-                    luckyDrawCount = 0;
-                    needSns = false;
-                    const remain = 80000 - price;
-                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 + SNS 인증 시 럭키드로우 2매 추가!`;
-                } else {
-                    const remain = 50000 - price;
-                    nextTierText = `💡 ${remain.toLocaleString()}원 더 구매 시 특전 포토카드 1매 증정`;
-                }
-            }
-
-            return { pcCount, luckyDrawCount, needSns, nextTierText };
-        }
-
-        function render() {
-            const container = document.getElementById('itemList');
-            container.innerHTML = '';
-
-            dataAniteez.forEach(item => {
-                const itemCount = getItemTotalCount(item.id);
-                const hasSelection = itemCount > 0;
-
-                const card = document.createElement('div');
-                card.className = `item-card ${hasSelection ? 'has-selection' : ''}`;
-
-                let contentHtml = `
-                    <div class="item-header">
-                        <div>
-                            <span class="item-name ${item.img ? 'clickable' : ''}" onclick="${item.img ? `openImageModal('${item.img}')` : ''}">${item.name}</span>
-                            <div class="item-meta">
-                                <span class="item-price">${item.price.toLocaleString()}원</span>
-                                ${item.limit ? `<span class="item-limit">${item.limit}</span>` : ''}
-                            </div>
-                        </div>
-                        ${hasSelection ? `<span class="item-total-badge">${itemCount}개</span>` : ''}
-                    </div>
-                `;
-
-                if (item.hasMembers) {
-                    contentHtml += `<div class="member-grid">`;
-                    members.forEach(m => {
-                        const qty = state[item.id][m] || 0;
-                        contentHtml += `
-                            <div class="member-box ${qty > 0 ? 'active' : ''}">
-                                <div class="member-name">${m}</div>
-                                <div class="counter-sm">
-                                    <button onclick="updateQuantity(${item.id}, '${m}', -1)">-</button>
-                                    <span>${qty}</span>
-                                    <button onclick="updateQuantity(${item.id}, '${m}', 1)">+</button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    contentHtml += `</div>`;
-                } else {
-                    const qty = state[item.id] || 0;
-                    contentHtml += `
-                        <div class="simple-counter-wrapper">
-                            <span class="simple-label">수량</span>
-                            <div class="counter-lg">
-                                <button onclick="updateQuantity(${item.id}, null, -1)">-</button>
-                                <span>${qty}</span>
-                                <button onclick="updateQuantity(${item.id}, null, 1)">+</button>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                card.innerHTML = contentHtml;
-                container.appendChild(card);
-            });
-
-            const { totalCount, totalPrice } = calculateOverallTotal();
-            document.getElementById('totalCount').innerText = `총 ${totalCount}개 선택`;
-            document.getElementById('totalPrice').innerText = `${totalPrice.toLocaleString()}원`;
-        }
-
-        function resetAll() {
-            if (confirm('선택한 수량을 모두 초기화하시겠습니까?')) {
-                initData();
-                render();
-                showToast('초기화되었습니다.');
-            }
-        }
-
-        function openModal() {
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = '';
-
-            const { totalCount, totalPrice } = calculateOverallTotal();
-
-            document.getElementById('modalChannelText').innerText = currentChannel;
-            updateDateDisplay();
-
-            if (proxyData.applicant || proxyData.buyer) {
-                document.getElementById('modalProxyText').style.display = 'block';
-                document.getElementById('modalProxyNames').innerText = `신청자: ${proxyData.applicant || '-'} / 대리인: ${proxyData.buyer || '-'}`;
-            } else {
-                document.getElementById('modalProxyText').style.display = 'none';
-            }
-
-            if (shippingNotes) {
-                document.getElementById('modalShippingText').style.display = 'block';
-                document.getElementById('modalShippingNotes').innerText = shippingNotes;
-            } else {
-                document.getElementById('modalShippingText').style.display = 'none';
-            }
-
-            if (totalCount === 0) {
-                modalBody.innerHTML = `<div class="summary-empty">선택된 상품이 없습니다.<br>수량을 선택해주세요!</div>`;
-            } else {
-                dataAniteez.forEach(item => {
-                    const count = getItemTotalCount(item.id);
-                    if (count > 0) {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'summary-item';
-
-                        let detailText = '';
-                        if (item.hasMembers) {
-                            const selectedMembers = [];
-                            members.forEach(m => {
-                                const q = state[item.id][m];
-                                if (q > 0) selectedMembers.push(`${m} ${q}개`);
-                            });
-                            detailText = selectedMembers.join(', ');
-                        } else {
-                            detailText = `수량: ${count}개`;
-                        }
-
-                        itemDiv.innerHTML = `
-                            <div class="summary-item-title">${item.name}</div>
-                            <div class="summary-item-details">
-                                <span>${detailText}</span>
-                                <strong>${(count * item.price).toLocaleString()}원</strong>
-                            </div>
-                        `;
-                        modalBody.appendChild(itemDiv);
-                    }
-                });
-            }
-
-            document.getElementById('modalTotalCount').innerText = `총 ${totalCount}개 선택`;
-            document.getElementById('modalTotalPrice').innerText = `${totalPrice.toLocaleString()}원`;
-
-            const benefits = calculateBenefits(totalPrice, currentChannel);
-            const benefitPc = document.getElementById('benefitPhotocardText');
-            const benefitLd = document.getElementById('benefitLuckyDrawText');
-            const benefitNext = document.getElementById('benefitNextTierText');
-
-            if (benefits.pcCount > 0) {
-                benefitPc.innerText = `🎁 특전 포토카드 총 ${benefits.pcCount}매 증정`;
-                benefitPc.style.display = 'block';
-            } else {
-                benefitPc.style.display = 'none';
-            }
-
-            if (benefits.luckyDrawCount > 0) {
-                benefitLd.innerText = `🎰 럭키드로우 총 ${benefits.luckyDrawCount}매 증정 ${benefits.needSns ? '(SNS 인증 필)' : ''}`;
-                benefitLd.style.display = 'block';
-            } else {
-                benefitLd.style.display = 'none';
-            }
-
-            benefitNext.innerText = benefits.nextTierText;
-
-            document.getElementById('summaryModal').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('summaryModal').classList.remove('active');
-        }
-
-        function closeModalOnOverlay(e) {
-            if (e.target === document.getElementById('summaryModal')) closeModal();
-        }
-
-        /* 📸 이미지 저장 기능 - 목록이 길어도 짤리지 않게 전체 오프스크린 캡처 */
-        function saveAsImage() {
-            const { totalCount } = calculateOverallTotal();
-            if (totalCount === 0) {
-                alert('선택된 상품이 없습니다!');
-                return;
-            }
-
-            const modalInfoBadge = document.getElementById('modalInfoBadge').outerHTML;
-            const modalBody = document.getElementById('modalBody').innerHTML;
-            const modalTotalCount = document.getElementById('modalTotalCount').innerText;
-            const modalTotalPrice = document.getElementById('modalTotalPrice').innerText;
-            const eventBenefitsArea = document.getElementById('eventBenefitsArea').outerHTML;
-
-            // 오프스크린에 전체 길이 캡처용 임시 컨테이너 생성
-            const cloneWrapper = document.createElement('div');
-            cloneWrapper.style.position = 'absolute';
-            cloneWrapper.style.left = '-9999px';
-            cloneWrapper.style.top = '-9999px';
-            cloneWrapper.style.width = '450px';
-            cloneWrapper.style.backgroundColor = '#ffffff';
-            cloneWrapper.style.borderRadius = '16px';
-            cloneWrapper.style.padding = '20px';
-            cloneWrapper.style.boxSizing = 'border-box';
-            cloneWrapper.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-
-            cloneWrapper.innerHTML = `
-                <div style="font-size: 1.2rem; font-weight: 800; color: #2d3436; margin-bottom: 14px; text-align: center; border-bottom: 2px solid #edf2f7; padding-bottom: 10px;">
-                    📋 나의 MD 구매 내역
-                </div>
-                ${modalInfoBadge}
-                <div style="margin-bottom: 16px;">
-                    ${modalBody}
-                </div>
-                <div style="background: #f0edff; padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 0.9rem; font-weight: 700; color: #2d3436;">${modalTotalCount}</span>
-                    <span style="font-size: 1.2rem; font-weight: 800; color: #6c5ce7;">${modalTotalPrice}</span>
-                </div>
-                ${eventBenefitsArea}
-            `;
-
-            document.body.appendChild(cloneWrapper);
-
-            // html2canvas 옵션으로 전체 영역 깔끔하게 캡처
-            html2canvas(cloneWrapper, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                document.getElementById('resultImg').src = imgData;
-                document.getElementById('resultImageModal').classList.add('active');
-                document.body.removeChild(cloneWrapper);
-            }).catch(err => {
-                console.error(err);
-                alert('이미지 생성 중 오류가 발생했습니다.');
-                if (document.body.contains(cloneWrapper)) {
-                    document.body.removeChild(cloneWrapper);
-                }
-            });
-        }
-
-        function closeResultImageModal() {
-            document.getElementById('resultImageModal').classList.remove('active');
-        }
-
-        function copySummary() {
-            const { totalCount, totalPrice } = calculateOverallTotal();
-            if (totalCount === 0) {
-                alert('선택된 상품이 없습니다!');
-                return;
-            }
-
-            let text = `[에이티즈 8주년 MD 구매 내역]\n`;
-            text += `🛒 구매 방식: ${currentChannel}\n`;
-            text += `📅 예정일: ${document.getElementById('visitDate').value || '미선택'}\n`;
-            text += `⏰ 시간대: ${document.getElementById('visitTime').value || '미선택'}\n`;
-
-            if (proxyData.applicant || proxyData.buyer) {
-                text += `🤝 대리구매: 신청자(${proxyData.applicant || '-'}) / 대리인(${proxyData.buyer || '-'})\n`;
-            }
-            if (shippingNotes) {
-                text += `🚚 메모: ${shippingNotes}\n`;
-            }
-
-            text += `------------------------\n`;
-
-            dataAniteez.forEach(item => {
-                const count = getItemTotalCount(item.id);
-                if (count > 0) {
-                    if (item.hasMembers) {
-                        const selectedMembers = [];
-                        members.forEach(m => {
-                            const q = state[item.id][m];
-                            if (q > 0) selectedMembers.push(`${m}(${q})`);
-                        });
-                        text += `▪ ${item.name}: ${selectedMembers.join(', ')} - ${(count * item.price).toLocaleString()}원\n`;
-                    } else {
-                        text += `▪ ${item.name}: ${count}개 - ${(count * item.price).toLocaleString()}원\n`;
-                    }
-                }
-            });
-
-            text += `------------------------\n`;
-            text += `💳 총 ${totalCount}개 / ${totalPrice.toLocaleString()}원\n`;
-
-            const benefits = calculateBenefits(totalPrice, currentChannel);
-            if (benefits.pcCount > 0) text += `🎁 특전 포카: ${benefits.pcCount}매\n`;
-            if (benefits.luckyDrawCount > 0) text += `🎰 럭키드로우: ${benefits.luckyDrawCount}매\n`;
-
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('구매 내역이 클립보드에 복사되었습니다!');
-            }).catch(err => {
-                alert('복사에 실패했습니다. 권한을 확인해주세요.');
-            });
-        }
-
-        function openShippingModal() {
-            document.getElementById('shippingNoteInput').value = shippingNotes;
-            document.getElementById('shippingModal').classList.add('active');
-        }
-
-        function closeShippingModal() {
-            document.getElementById('shippingModal').classList.remove('active');
-        }
-
-        function saveShippingInfo() {
-            shippingNotes = document.getElementById('shippingNoteInput').value.trim();
-            closeShippingModal();
-            showToast('배송 일정 메모가 저장되었습니다!');
-            if (document.getElementById('summaryModal').classList.contains('active')) {
-                openModal();
-            }
-        }
-
-        function clearShippingInfo() {
-            shippingNotes = '';
-            document.getElementById('shippingNoteInput').value = '';
-            closeShippingModal();
-            showToast('배송 일정 메모가 초기화되었습니다.');
-            if (document.getElementById('summaryModal').classList.contains('active')) {
-                openModal();
-            }
-        }
-
-        function openProxyModal() {
-            document.getElementById('applicantName').value = proxyData.applicant;
-            document.getElementById('buyerName').value = proxyData.buyer;
-            document.getElementById('proxyModal').classList.add('active');
-        }
-
-        function closeProxyModal() {
-            document.getElementById('proxyModal').classList.remove('active');
-        }
-
-        function saveProxyInfo() {
-            proxyData.applicant = document.getElementById('applicantName').value.trim();
-            proxyData.buyer = document.getElementById('buyerName').value.trim();
-            closeProxyModal();
-            showToast('대리구매 정보가 적용되었습니다!');
-            if (document.getElementById('summaryModal').classList.contains('active')) {
-                openModal();
-            }
-        }
-
-        function clearProxyInfo() {
-            proxyData = { applicant: '', buyer: '' };
-            document.getElementById('applicantName').value = '';
-            document.getElementById('buyerName').value = '';
-            closeProxyModal();
-            showToast('대리구매 정보가 초기화되었습니다.');
-            if (document.getElementById('summaryModal').classList.contains('active')) {
-                openModal();
-            }
-        }
-
-        function openImageModal(imgSrc) {
-            document.getElementById('modalImg').src = imgSrc;
-            document.getElementById('imageModal').classList.add('active');
-        }
-
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.remove('active');
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-    </script>
+      </div>`;
+    }).join("");
+  }
+  renderSummary();
+}
+
+$("#entries").addEventListener("click", async e=>{
+  const t = e.target.closest("[data-act]");
+  if(!t) return;
+  const card = t.closest(".entry");
+  const item = entries.find(x => x.id === card.dataset.id);
+  const act = t.dataset.act;
+  if(act === "toggle"){
+    const m = t.dataset.m;
+    const my = mine[item.id] || [];
+    mine[item.id] = my.includes(m) ? my.filter(x=>x!==m) : [...my, m];
+    saveMine(); render();
+  } else if(act === "zoom"){
+    $("#lightbox img").src = item._p || item.img; $("#lightbox").style.display = "flex";
+  } else if(token && act === "rename"){
+    const n = prompt("미공포 이름 수정", item.title);
+    if(n && n.trim()){
+      item.title = n.trim(); render(); status("저장 중...");
+      try{ await saveData(); status("✅ 저장됐어요!", 3000); }catch(err){ status("❌ "+err.message, 4000); }
+    }
+  } else if(token && act === "del"){
+    if(!confirm(`"${item.title}" 을(를) 삭제할까요?`)) return;
+    entries = entries.filter(x => x.id !== item.id); render(); status("삭제 중...");
+    try{
+      await saveData();
+      if(item.img) await deleteFile(item.img);
+      status("✅ 삭제됐어요!", 3000);
+    }catch(err){ status("❌ "+err.message, 4000); }
+  }
+});
+$("#lightbox").addEventListener("click", ()=> $("#lightbox").style.display = "none");
+$("#search").addEventListener("input", render);
+
+function renderSummary(){
+  if(!entries.length){
+    $("#stats").innerHTML = "";
+    $("#matrix").innerHTML = `<div class="empty">등록된 미공포가 없어요.</div>`;
+    return;
+  }
+  const totals = MEMBERS.map(m => entries.filter(e => (mine[e.id]||[]).includes(m)).length);
+  $("#stats").innerHTML = `<span class="stat">미공포 ${entries.length}종</span>` +
+    MEMBERS.map((m,i)=>`<span class="stat">${m} O ${totals[i]}</span>`).join("");
+  $("#matrix").innerHTML = `
+    <table>
+      <thead><tr><th>미공포</th>${MEMBERS.map(m=>`<th>${m}</th>`).join("")}</tr></thead>
+      <tbody>
+        ${entries.map(e=>`<tr><td>${esc(e.title)}</td>${MEMBERS.map(m=>(mine[e.id]||[]).includes(m)?`<td class="o">O</td>`:`<td class="x">X</td>`).join("")}</tr>`).join("")}
+      </tbody>
+      <tfoot><tr><td>O 합계</td>${totals.map(n=>`<td>${n}</td>`).join("")}</tr></tfoot>
+    </table>`;
+}
+
+document.querySelectorAll(".tab").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active", x===b));
+    $("#view-list").style.display = b.dataset.tab==="list" ? "" : "none";
+    $("#view-sum").style.display = b.dataset.tab==="sum" ? "" : "none";
+  });
+});
+
+setAdmin(!!token);
+loadData();
+</script>
 </body>
 </html>
