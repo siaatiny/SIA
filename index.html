@@ -17,13 +17,14 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"
 header{padding:20px 16px 8px;max-width:900px;margin:0 auto}
 h1{margin:0;font-size:22px}
 header p{margin:4px 0 0;color:var(--sub);font-size:13px}
-main{max-width:900px;margin:0 auto;padding:8px 16px 80px}
+main{max-width:900px;margin:0 auto;padding:8px 16px 120px}
 .tabs{display:flex;gap:8px;margin:12px 0}
 .tab{flex:1;padding:10px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;font-size:14px;cursor:pointer}
 .tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
 .box h2{margin:0 0 10px;font-size:15px}
-input[type=text],input[type=number],input[type=date],input[type=search]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:8px}
+input[type=text],input[type=number],input[type=date],input[type=search],textarea,select.sel{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:8px;font-family:inherit}
+textarea{resize:vertical}
 label.f{display:block;font-size:12px;color:var(--sub);margin-bottom:2px}
 button{font-family:inherit}
 .btn{padding:10px 14px;border:none;border-radius:8px;background:var(--accent);color:var(--bg);font-size:14px;cursor:pointer}
@@ -32,21 +33,34 @@ button{font-family:inherit}
 .btn.small{padding:6px 10px;font-size:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.toolbar{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
-.toolbar input{margin-bottom:0;flex:1}
+.toolbar{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;flex-wrap:wrap}
+.toolbar input{margin-bottom:0;flex:1;min-width:160px}
 .toolbar .btn{white-space:nowrap;padding:10px 12px;font-size:13px}
+summary{cursor:pointer;font-weight:700;font-size:15px}
+.frow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+
+/* ===== 폴더 ===== */
+.folder{margin-bottom:12px}
+.folder-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px;cursor:pointer;font-weight:800;font-size:16px;user-select:none}
+.folder-head .cnt{color:var(--sub);font-weight:600;font-size:13px;margin-left:6px}
+.folder-head .arrow{color:var(--sub);font-size:12px}
+.folder-body{margin-top:10px}
+.folder-body .entry:last-child{margin-bottom:0}
 
 /* ===== 리스트 카드 ===== */
 .entry{border:2px solid var(--text);border-radius:6px;padding:14px 16px}
+.entry.sel{border-color:var(--on)}
 .entry-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .r-title{font-weight:800;font-size:18px;word-break:keep-all}
-.r-ver{font-weight:600;font-size:15px;margin-top:10px;word-break:keep-all}
-.entry-date{color:var(--sub);font-size:12px;margin-top:2px}
+.tag{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--sub);margin-top:6px}
+.r-ver{font-weight:600;font-size:15px;margin-top:8px;word-break:keep-all;white-space:pre-wrap}
+.entry-date{color:var(--sub);font-size:12px;margin-top:4px}
+.entry-date.ended{color:#d9534f}
 .r-label{font-weight:800;font-size:15px;margin-top:12px}
 .picbtn{margin-top:10px}
+.selbox input{width:20px;height:20px;margin:3px 10px 0 0}
 .gallery{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin-top:10px;-webkit-overflow-scrolling:touch}
 .gallery img{flex:0 0 100%;width:100%;border-radius:8px;display:block;cursor:zoom-in;scroll-snap-align:start}
-/* 사진 편집 썸네일 */
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:6px 0 10px}
 .ed-thumb{border:1px solid var(--line);border-radius:10px;padding:6px;background:var(--card)}
 .ed-thumb img{width:100%;height:120px;object-fit:cover;border-radius:6px;display:block;margin-bottom:6px}
@@ -67,10 +81,12 @@ td.x{color:var(--sub)}
 tfoot td{font-weight:700;color:var(--sub)}
 .stats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .stat{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
-#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:12;padding:16px}
 #lightbox img{max-width:100%;max-height:100%;border-radius:8px}
 .note{font-size:12px;color:var(--sub);margin-top:6px}
-#status{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--accent);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13px;display:none;z-index:10}
+#status{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);background:var(--accent);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:13px;display:none;z-index:11}
+#selbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:10px 14px;display:none;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;z-index:10}
+#selbar select{padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);font-size:14px}
 footer{text-align:center;margin-top:30px}
 .admin-only{display:none}
 body.admin .admin-only{display:block}
@@ -85,6 +101,7 @@ body.admin .admin-only.inline{display:flex}
 .bar>div{height:100%;background:var(--on);width:0}
 .editbox{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
 .editbox .chk{display:flex;gap:6px;align-items:center;font-size:14px;margin:6px 0 10px}
+.editbox input[type=text],.editbox input[type=number],.editbox input[type=date],.editbox textarea,.editbox select.sel{background:var(--card)}
 </style>
 </head>
 <body>
@@ -102,12 +119,17 @@ body.admin .admin-only.inline{display:flex}
     <!-- 관리자 전용: 미공포 등록 -->
     <div class="box admin-only" id="addBox">
       <h2>새 미공포 등록 (관리자)</h2>
+      <label class="f">음반사 폴더</label>
+      <select class="sel" id="newFolder"></select>
       <label class="f">미공포 이름</label>
-      <input type="text" id="newTitle" placeholder="예) 애플뮤직 미공포">
-      <label class="f">버전</label>
-      <input type="text" id="newVer" placeholder="예) 디지팩 VER. 에이티니의 기사님 VER.">
-      <label class="f">날짜 (선택)</label>
-      <input type="date" id="newDate">
+      <input type="text" id="newTitle" placeholder="예) 애플뮤직 미공포 (디지팩) 벽찌빵 VER.">
+      <label class="f">앨범 종류</label>
+      <select class="sel" id="newType"></select>
+      <p class="note" style="margin-top:-2px">디지팩유닛을 고르면 선택여부가 유닛(4팀)으로 바뀌어요.</p>
+      <label class="f">비고</label>
+      <textarea id="newNote" rows="2" placeholder="자유롭게 메모를 적어주세요"></textarea>
+      <label class="f">판매 종료 날짜 (선택)</label>
+      <input type="date" id="newEnd">
       <label class="f">사진 (여러 장 선택 가능)</label>
       <input type="file" id="newImg" accept="image/*" multiple>
       <div class="thumbs" id="newThumbs"></div>
@@ -117,8 +139,25 @@ body.admin .admin-only.inline{display:flex}
       <p class="note">세트 특전은 등록 후 각 카드의 "수정" 버튼에서 추가할 수 있어요.</p>
     </div>
 
+    <!-- 관리자 전용: 폴더 관리 -->
+    <details class="box admin-only" id="folderBox">
+      <summary>📁 음반사 폴더 관리</summary>
+      <div style="margin-top:10px">
+        <div class="row" style="flex-wrap:nowrap">
+          <input type="text" id="newFolderName" placeholder="새 음반사 이름" style="margin-bottom:0">
+          <button class="btn" id="addFolderBtn" style="white-space:nowrap">추가</button>
+        </div>
+        <div id="folderList" style="margin-top:8px"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost small" id="autoBtn">🪄 이름으로 자동 분류 (미분류만)</button>
+        </div>
+        <p class="note">미공포 카드 왼쪽 체크박스로 여러 개를 고르면 아래에 "폴더로 이동" 바가 나와요.</p>
+      </div>
+    </details>
+
     <div class="toolbar">
       <input type="search" id="search" placeholder="🔍 미공포 검색">
+      <button class="btn ghost" id="openAll">📂 폴더 모두 펼치기</button>
       <button class="btn ghost" id="picToggle">📷 사진 모두 보기</button>
     </div>
     <div id="entries" style="margin-top:12px"></div>
@@ -137,11 +176,26 @@ body.admin .admin-only.inline{display:flex}
   </footer>
 </main>
 
+<div id="selbar">
+  <span id="selCnt"></span>
+  <select id="selFolder"></select>
+  <button class="btn small" id="selMove">폴더로 이동</button>
+  <button class="btn ghost small" id="selClear">선택 해제</button>
+</div>
 <div id="lightbox"><img alt=""></div>
 <div id="status"></div>
 
 <script>
 const MEMBERS = ["홍중","성화","윤호","여상","산","민기","우영","종호"];
+const UNITS   = ["홍중&종호","성화&산","윤호&우영","여상&민기"];
+const TYPES = [
+  {id:"adz",  name:"(A/DIARY/Z)"},
+  {id:"poca", name:"포카앨범"},
+  {id:"digi", name:"디지팩"},
+  {id:"unit", name:"디지팩유닛 (총 4장)"}
+];
+const DEFAULT_FOLDERS = ["NU뮤직","애플뮤직","케이팝스토어","메이크스타","헬로라이브","YES24","사운드웨이브","muuve","점프업"]
+  .map((n,i)=>({id:"d"+(i+1), name:n}));
 
 /* ===== 저장소 정보 (자동 인식. 안 맞으면 아래에 직접 입력) ===== */
 const OVERRIDE_OWNER = "";   // 예: "myid"
@@ -155,25 +209,33 @@ const TOKEN_KEY = "pc-admin-token";
 const MINE_KEY  = "pc-mine-v2";
 const BONUS_KEY = "pc-bonus-v1";
 const PIC_KEY   = "pc-showpics";
+const OPEN_KEY  = "pc-openfolders";
 
+let folders = DEFAULT_FOLDERS.map(f=>({...f}));
 let entries = [];
 let editState = null;      // {id, imgs:[{path,data}], f:{...}}
 let previews = {};         // 방금 올린 사진 미리보기 (path -> dataURL)
+let selected = new Set();  // 폴더 이동용 선택
 let showPics = localStorage.getItem(PIC_KEY) === "1";
-let openPics = new Set();  // 개별로 사진을 펼친 항목
+let openPics = new Set();
+let openFolders = new Set(); try { openFolders = new Set(JSON.parse(localStorage.getItem(OPEN_KEY)) || []); } catch(e){}
 let token = localStorage.getItem(TOKEN_KEY) || "";
 let mine = {};   try { mine  = JSON.parse(localStorage.getItem(MINE_KEY))  || {}; } catch(e){}
 let mineB = {};  try { mineB = JSON.parse(localStorage.getItem(BONUS_KEY)) || {}; } catch(e){}
 
 const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function saveMine(){ localStorage.setItem(MINE_KEY, JSON.stringify(mine)); localStorage.setItem(BONUS_KEY, JSON.stringify(mineB)); }
+function saveOpen(){ localStorage.setItem(OPEN_KEY, JSON.stringify([...openFolders])); }
 function status(msg, ms){
   const s = $("#status"); s.textContent = msg; s.style.display = msg ? "block" : "none";
   if(ms) setTimeout(()=> s.style.display = "none", ms);
 }
 const newPath = id => "images/"+id+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+".jpg";
 const srcOf = p => previews[p] || p;
+const typeName = id => (TYPES.find(t=>t.id===id)||{}).name || "";
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+const folderOf = e => folders.some(f=>f.id===e.folder) ? e.folder : "_none";
 
 /* ===== GitHub API ===== */
 const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/`;
@@ -202,28 +264,49 @@ async function deleteFile(path){
   }catch(e){}
 }
 async function saveData(){
-  const clean = entries.map(({id,title,ver,date,imgs,bonus}) => ({id,title,ver:ver||"",date,imgs:imgs||[],bonus:bonus||null}));
+  const clean = entries.map(({id,title,note,end,type,folder,imgs,bonus}) =>
+    ({id,title,note:note||"",end:end||"",type:type||"",folder:folder||"",imgs:imgs||[],bonus:bonus||null}));
   const cur = await getFile("data.json");
-  await putFile("data.json", b64enc(JSON.stringify({entries:clean}, null, 1)), "update data", cur && cur.sha);
+  await putFile("data.json", b64enc(JSON.stringify({folders, entries:clean}, null, 1)), "update data", cur && cur.sha);
+}
+async function persist(okMsg){
+  status("저장 중...");
+  try{ await saveData(); status("✅ "+okMsg, 3000); }
+  catch(err){ status("❌ "+err.message, 4000); }
 }
 
 /* ===== 데이터 불러오기 (예전 형식 자동 변환) ===== */
-function normalize(list){
-  return (list||[]).map(e => {
-    const imgs = Array.isArray(e.imgs) ? e.imgs : (e.img ? [e.img] : []);
-    return { id:e.id, title:e.title, ver:e.ver||"", date:e.date||"", imgs, bonus:e.bonus||null };
-  });
+function inferType(title){
+  if(/디지팩\s*유닛/.test(title)) return "unit";
+  if(/포카\s*앨범/.test(title))   return "poca";
+  if(/디지팩/.test(title))        return "digi";
+  if(/A\s*\/\s*DIARY/i.test(title)) return "adz";
+  return "";
+}
+function applyData(d){
+  d = d || {};
+  folders = Array.isArray(d.folders) ? d.folders : DEFAULT_FOLDERS.map(f=>({...f}));
+  entries = (d.entries||[]).map(e => ({
+    id: e.id,
+    title: e.title || "",
+    note: e.note !== undefined ? e.note : (e.ver || ""),
+    end:  e.end  !== undefined ? e.end  : (e.date || ""),
+    type: e.type !== undefined ? e.type : inferType(e.title || ""),
+    folder: e.folder || "",
+    imgs: Array.isArray(e.imgs) ? e.imgs : (e.img ? [e.img] : []),
+    bonus: e.bonus || null
+  }));
 }
 async function loadData(){
   try{
     if(token && OWNER){
       const f = await getFile("data.json");
-      entries = f ? normalize(JSON.parse(b64dec(f.content)).entries) : [];
+      applyData(f ? JSON.parse(b64dec(f.content)) : {});
     } else {
       const r = await fetch("data.json?t="+Date.now());
-      entries = r.ok ? normalize((await r.json()).entries) : [];
+      applyData(r.ok ? await r.json() : {});
     }
-  }catch(e){ entries = []; }
+  }catch(e){ applyData({}); }
   render();
 }
 
@@ -252,7 +335,7 @@ function compress(file, max=1000){
 function setAdmin(on){
   document.body.classList.toggle("admin", on);
   $("#loginBtn").textContent = on ? "🔓 관리자 로그아웃" : "🔑 관리자 로그인";
-  if(!on) editState = null;
+  if(!on){ editState = null; selected.clear(); }
   render();
 }
 $("#loginBtn").addEventListener("click", async ()=>{
@@ -271,16 +354,34 @@ $("#loginBtn").addEventListener("click", async ()=>{
   }catch(e){ alert("토큰이 올바르지 않거나 이 저장소에 쓰기 권한이 없어요."); }
 });
 
-/* ===== 사진 보기 토글 ===== */
+/* ===== 사진 보기 / 폴더 펼치기 토글 ===== */
 function updatePicBtn(){ $("#picToggle").textContent = showPics ? "📷 사진 모두 숨기기" : "📷 사진 모두 보기"; }
 $("#picToggle").addEventListener("click", ()=>{
   showPics = !showPics; openPics.clear();
   localStorage.setItem(PIC_KEY, showPics ? "1" : "0");
   updatePicBtn(); render();
 });
+$("#openAll").addEventListener("click", ()=>{
+  const ids = ["_none", ...folders.map(f=>f.id)];
+  const allOpen = ids.every(id => openFolders.has(id));
+  if(allOpen) openFolders.clear(); else ids.forEach(id => openFolders.add(id));
+  saveOpen(); render();
+});
+
+/* ===== select 옵션 ===== */
+function folderOptions(sel){
+  return `<option value="">미분류</option>` + folders.map(f=>`<option value="${esc(f.id)}" ${f.id===sel?"selected":""}>${esc(f.name)}</option>`).join("");
+}
+function typeOptions(sel){
+  return `<option value="">선택 안 함</option>` + TYPES.map(t=>`<option value="${t.id}" ${t.id===sel?"selected":""}>${esc(t.name)}</option>`).join("");
+}
+function fillNewForm(){
+  const fs = $("#newFolder"); fs.innerHTML = folderOptions(fs.value);
+  const ts = $("#newType");   if(!ts.options.length) ts.innerHTML = typeOptions("");
+}
 
 /* ===== 미공포 등록 (관리자) ===== */
-let pendingImgs = [];   // dataURL 배열
+let pendingImgs = [];
 function renderNewThumbs(){
   $("#newThumbs").innerHTML = pendingImgs.map((d,i)=>`
     <div class="ed-thumb"><img src="${d}" alt="">
@@ -310,13 +411,86 @@ $("#addBtn").addEventListener("click", async ()=>{
       imgs.push(p);
     }
     status("저장 중...");
-    entries.unshift({ id, title, ver: $("#newVer").value.trim(), date: $("#newDate").value, imgs, bonus:null });
+    const folder = $("#newFolder").value;
+    entries.unshift({ id, title, note:$("#newNote").value.trim(), end:$("#newEnd").value,
+      type:$("#newType").value, folder, imgs, bonus:null });
+    openFolders.add(folder || "_none"); saveOpen();
     await saveData();
-    $("#newTitle").value = ""; $("#newVer").value = ""; $("#newDate").value = "";
+    $("#newTitle").value = ""; $("#newNote").value = ""; $("#newEnd").value = ""; $("#newType").value = "";
     pendingImgs = []; renderNewThumbs();
     render(); status("✅ 저장됐어요! (사이트 반영까지 1~2분 걸려요)", 4000);
   }catch(e){ status("❌ "+e.message, 4000); }
   btn.disabled = false;
+});
+
+/* ===== 폴더 관리 (관리자) ===== */
+function renderFolderMgr(){
+  $("#folderList").innerHTML = folders.length ? folders.map(f=>{
+    const n = entries.filter(e=>e.folder===f.id).length;
+    return `<div class="frow"><span>📁 ${esc(f.name)} <span class="note">(${n})</span></span>
+      <span class="row">
+        <button class="btn ghost small" data-fact="rename" data-fid="${esc(f.id)}">이름 수정</button>
+        <button class="btn ghost small" data-fact="del" data-fid="${esc(f.id)}">삭제</button>
+      </span></div>`;
+  }).join("") : `<div class="note">폴더가 없어요.</div>`;
+}
+$("#addFolderBtn").addEventListener("click", async ()=>{
+  const name = $("#newFolderName").value.trim();
+  if(!name) return;
+  if(folders.some(f=>f.name.toLowerCase()===name.toLowerCase())){ alert("이미 있는 폴더예요."); return; }
+  folders.push({ id:"f"+Date.now().toString(36), name });
+  $("#newFolderName").value = "";
+  render(); await persist("폴더를 추가했어요!");
+});
+$("#folderList").addEventListener("click", async e=>{
+  const b = e.target.closest("[data-fact]");
+  if(!b || !token) return;
+  const f = folders.find(x=>x.id===b.dataset.fid);
+  if(!f) return;
+  if(b.dataset.fact === "rename"){
+    const n = prompt("폴더 이름 수정", f.name);
+    if(n && n.trim()){ f.name = n.trim(); render(); await persist("폴더 이름을 바꿨어요!"); }
+  } else {
+    const cnt = entries.filter(x=>x.folder===f.id).length;
+    if(!confirm(`"${f.name}" 폴더를 삭제할까요?${cnt?`\n안에 있는 미공포 ${cnt}개는 미분류로 이동해요.`:""}`)) return;
+    entries.forEach(x=>{ if(x.folder===f.id) x.folder=""; });
+    folders = folders.filter(x=>x.id!==f.id);
+    render(); await persist("폴더를 삭제했어요!");
+  }
+});
+$("#autoBtn").addEventListener("click", async ()=>{
+  const plan = [];
+  entries.forEach(e=>{
+    if(folderOf(e) !== "_none") return;
+    const t = e.title.toLowerCase();
+    const f = folders.find(f=>t.includes(f.name.toLowerCase()));
+    if(f) plan.push([e,f]);
+  });
+  if(!plan.length){ alert("이름으로 자동 분류할 수 있는 항목이 없어요."); return; }
+  if(!confirm(`미분류 ${plan.length}개를 이름에 들어간 음반사 폴더로 옮길까요?`)) return;
+  plan.forEach(([e,f])=>{ e.folder = f.id; openFolders.add(f.id); });
+  saveOpen(); render(); await persist(`${plan.length}개를 분류했어요!`);
+});
+
+/* ===== 선택 → 폴더 이동 (관리자) ===== */
+function updateSelBar(){
+  [...selected].forEach(id=>{ if(!entries.some(e=>e.id===id)) selected.delete(id); });
+  const bar = $("#selbar");
+  if(!token || !selected.size){ bar.style.display = "none"; return; }
+  const sel = $("#selFolder"), cur = sel.value;
+  sel.innerHTML = folders.map(f=>`<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("") + `<option value="_none">미분류</option>`;
+  sel.value = (cur && [...sel.options].some(o=>o.value===cur)) ? cur : (folders[0] ? folders[0].id : "_none");
+  $("#selCnt").textContent = selected.size + "개 선택";
+  bar.style.display = "flex";
+}
+$("#selClear").addEventListener("click", ()=>{ selected.clear(); render(); });
+$("#selMove").addEventListener("click", async ()=>{
+  const fid = $("#selFolder").value;
+  const ids = [...selected];
+  ids.forEach(id=>{ const it = entries.find(x=>x.id===id); if(it) it.folder = fid==="_none" ? "" : fid; });
+  openFolders.add(fid); saveOpen();
+  selected.clear(); render();
+  await persist(`${ids.length}개를 이동했어요!`);
 });
 
 /* ===== 수정 상태 ===== */
@@ -326,8 +500,9 @@ function startEdit(item){
     id: item.id,
     imgs: item.imgs.map(p => ({ path:p, data:null })),
     f: {
-      title:item.title, ver:item.ver||"", date:item.date||"", on:!!item.bonus,
-      bname:b.name||"", per:b.per||3, pick:(b.pick!=null?b.pick:2),
+      title:item.title, note:item.note||"", end:item.end||"", type:item.type||"",
+      folder: folders.some(f=>f.id===item.folder) ? item.folder : "",
+      on:!!item.bonus, bname:b.name||"", per:b.per||3, pick:(b.pick!=null?b.pick:2),
       types:(b.types||[]).join(", "), goal:b.goal||0
     }
   };
@@ -338,8 +513,10 @@ function captureEdit(){
   if(!eb) return;
   editState.f = {
     title: eb.querySelector(".ed-title").value,
-    ver:   eb.querySelector(".ed-ver").value,
-    date:  eb.querySelector(".ed-date").value,
+    note:  eb.querySelector(".ed-note").value,
+    end:   eb.querySelector(".ed-end").value,
+    type:  eb.querySelector(".ed-type").value,
+    folder:eb.querySelector(".ed-folder").value,
     on:    eb.querySelector(".ed-on").checked,
     bname: eb.querySelector(".ed-bname").value,
     per:   eb.querySelector(".ed-per").value,
@@ -400,12 +577,17 @@ function editHTML(){
   const f = editState.f;
   return `
   <div class="editbox">
+    <label class="f">음반사 폴더</label>
+    <select class="sel ed-folder">${folderOptions(f.folder)}</select>
     <label class="f">미공포 이름</label>
     <input type="text" class="ed-title" value="${esc(f.title)}">
-    <label class="f">버전</label>
-    <input type="text" class="ed-ver" placeholder="예) 디지팩 VER. 에이티니의 기사님 VER." value="${esc(f.ver)}">
-    <label class="f">날짜 (선택)</label>
-    <input type="date" class="ed-date" value="${esc(f.date)}">
+    <label class="f">앨범 종류</label>
+    <select class="sel ed-type">${typeOptions(f.type)}</select>
+    <p class="note" style="margin-top:-2px">디지팩유닛을 고르면 선택여부가 유닛(4팀)으로 바뀌어요.</p>
+    <label class="f">비고</label>
+    <textarea class="ed-note" rows="2" placeholder="자유롭게 메모를 적어주세요">${esc(f.note)}</textarea>
+    <label class="f">판매 종료 날짜 (선택)</label>
+    <input type="date" class="ed-end" value="${esc(f.end)}">
 
     <label class="f">사진 관리</label>
     <div class="ed-imgs">${editImgsHTML()}</div>
@@ -431,42 +613,78 @@ function editHTML(){
   </div>`;
 }
 
+function cardHTML(e){
+  const opts = e.type === "unit" ? UNITS : MEMBERS;
+  const my = mine[e.id] || [];
+  const editing = token && editState && editState.id === e.id;
+  const showGal = !editing && e.imgs.length && (showPics || openPics.has(e.id));
+  const ended = e.end && e.end < todayStr();
+  return `
+  <div class="box entry${selected.has(e.id)?" sel":""}" data-id="${e.id}">
+    <div class="entry-head">
+      <div class="row" style="flex-wrap:nowrap;align-items:flex-start;gap:0">
+        <label class="selbox admin-only inline"><input type="checkbox" data-act="sel" ${selected.has(e.id)?"checked":""}></label>
+        <div class="r-title">${esc(e.title)}</div>
+      </div>
+      <div class="row admin-only inline" style="flex-wrap:nowrap">
+        <button class="btn ghost small" data-act="edit">수정</button>
+        <button class="btn ghost small" data-act="del">삭제</button>
+      </div>
+    </div>
+    ${e.type ? `<span class="tag">${esc(typeName(e.type))}</span>` : ""}
+    ${e.note ? `<div class="r-ver">${esc(e.note)}</div>` : ""}
+    ${e.end ? `<div class="entry-date${ended?" ended":""}">판매 종료 ${esc(e.end)}${ended?" (종료)":""}</div>` : ""}
+    ${editing ? editHTML() : ""}
+    ${showGal ? `<div class="gallery">${e.imgs.map((p,i)=>`<img src="${srcOf(p)}" alt="${esc(e.title)}" data-act="zoom" data-i="${i}">`).join("")}</div>
+      ${e.imgs.length>1 ? `<div class="note">사진 ${e.imgs.length}장 · 옆으로 넘겨보세요 →</div>` : ""}` : ""}
+    ${(!showPics && !editing && e.imgs.length) ? `<button class="btn ghost small picbtn" data-act="picsw">${openPics.has(e.id) ? "📷 사진 숨기기" : `📷 사진 ${e.imgs.length}장 보기`}</button>` : ""}
+    <div class="r-label">선택여부</div>
+    <div class="chips">
+      ${opts.map(m => { const on = my.includes(m);
+        return `<span class="chip ${on?'on':''}" data-act="toggle" data-m="${esc(m)}">${esc(m)}<b>${on?'O':'X'}</b></span>`; }).join("")}
+    </div>
+    ${bonusHTML(e)}
+  </div>`;
+}
+
+function groups(){
+  const q = $("#search").value.trim().toLowerCase();
+  const list = entries.filter(e => !q || (e.title+" "+e.note).toLowerCase().includes(q));
+  const gs = folders.map(f => ({ id:f.id, name:f.name, items:list.filter(e=>e.folder===f.id) }));
+  gs.push({ id:"_none", name:"미분류", items:list.filter(e=>folderOf(e)==="_none") });
+  return { q, gs, total:list.length };
+}
+
 function render(){
   captureEdit();
-  const q = $("#search").value.trim().toLowerCase();
-  const list = entries.filter(e => (e.title+" "+e.ver).toLowerCase().includes(q));
+  fillNewForm();
+  renderFolderMgr();
+  const { q, gs, total } = groups();
   const box = $("#entries");
-  if(!list.length){
-    box.innerHTML = `<div class="empty">${entries.length ? "검색 결과가 없어요." : "아직 등록된 미공포가 없어요."}</div>`;
+  if(!entries.length){
+    box.innerHTML = `<div class="empty">아직 등록된 미공포가 없어요.</div>`;
+  } else if(q && !total){
+    box.innerHTML = `<div class="empty">검색 결과가 없어요.</div>`;
   } else {
-    box.innerHTML = list.map(e => {
-      const my = mine[e.id] || [];
-      const editing = token && editState && editState.id === e.id;
-      const showGal = !editing && e.imgs.length && (showPics || openPics.has(e.id));
+    box.innerHTML = gs.map(g => {
+      if(g.id === "_none" && !g.items.length) return "";
+      if(!g.items.length && (!token || q)) return "";
+      const editingHere = token && editState && g.items.some(i=>i.id===editState.id);
+      const open = !!q || openFolders.has(g.id) || editingHere;
       return `
-      <div class="box entry" data-id="${e.id}">
-        <div class="entry-head">
-          <div class="r-title">${esc(e.title)}</div>
-          <div class="row admin-only inline">
-            <button class="btn ghost small" data-act="edit">수정</button>
-            <button class="btn ghost small" data-act="del">삭제</button>
-          </div>
+      <div class="folder" data-fid="${esc(g.id)}">
+        <div class="folder-head" data-act="ftoggle">
+          <span>${open?"📂":"📁"} ${esc(g.name)}<span class="cnt">${g.items.length}</span></span>
+          <span class="row" style="flex-wrap:nowrap">
+            ${g.items.length ? `<button class="btn ghost small admin-only inline" data-act="fselall">전체선택</button>` : ""}
+            <span class="arrow">${open?"▲":"▼"}</span>
+          </span>
         </div>
-        ${e.ver ? `<div class="r-ver">${esc(e.ver)}</div>` : ""}
-        ${e.date ? `<div class="entry-date">${esc(e.date)}</div>` : ""}
-        ${editing ? editHTML() : ""}
-        ${showGal ? `<div class="gallery">${e.imgs.map((p,i)=>`<img src="${srcOf(p)}" alt="${esc(e.title)}" data-act="zoom" data-i="${i}">`).join("")}</div>
-          ${e.imgs.length>1 ? `<div class="note">사진 ${e.imgs.length}장 · 옆으로 넘겨보세요 →</div>` : ""}` : ""}
-        ${(!showPics && !editing && e.imgs.length) ? `<button class="btn ghost small picbtn" data-act="picsw">${openPics.has(e.id) ? "📷 사진 숨기기" : `📷 사진 ${e.imgs.length}장 보기`}</button>` : ""}
-        <div class="r-label">선택여부</div>
-        <div class="chips">
-          ${MEMBERS.map(m => { const on = my.includes(m);
-            return `<span class="chip ${on?'on':''}" data-act="toggle" data-m="${m}">${m}<b>${on?'O':'X'}</b></span>`; }).join("")}
-        </div>
-        ${bonusHTML(e)}
+        ${open ? `<div class="folder-body">${g.items.length ? g.items.map(cardHTML).join("") : `<div class="empty" style="padding:16px 0">비어 있어요.</div>`}</div>` : ""}
       </div>`;
     }).join("");
   }
+  updateSelBar();
   renderSummary();
 }
 
@@ -486,11 +704,35 @@ $("#entries").addEventListener("change", async e=>{
 $("#entries").addEventListener("click", async e=>{
   const t = e.target.closest("[data-act]");
   if(!t) return;
-  const card = t.closest(".entry");
-  const item = entries.find(x => x.id === card.dataset.id);
   const act = t.dataset.act;
 
-  if(act === "toggle"){
+  /* 폴더 헤더 */
+  if(act === "ftoggle" || act === "fselall"){
+    const fid = t.closest(".folder").dataset.fid;
+    if(act === "ftoggle"){
+      if(openFolders.has(fid)) openFolders.delete(fid); else openFolders.add(fid);
+      saveOpen(); render();
+    } else if(token){
+      const g = groups().gs.find(x=>x.id===fid);
+      if(g){
+        const all = g.items.every(i=>selected.has(i.id));
+        g.items.forEach(i => all ? selected.delete(i.id) : selected.add(i.id));
+        render();
+      }
+    }
+    return;
+  }
+
+  const card = t.closest(".entry");
+  if(!card) return;
+  const item = entries.find(x => x.id === card.dataset.id);
+  if(!item) return;
+
+  if(act === "sel"){
+    if(t.checked) selected.add(item.id); else selected.delete(item.id);
+    card.classList.toggle("sel", t.checked);
+    updateSelBar();
+  } else if(act === "toggle"){
     const m = t.dataset.m;
     const my = mine[item.id] || [];
     mine[item.id] = my.includes(m) ? my.filter(x=>x!==m) : [...my, m];
@@ -534,8 +776,11 @@ $("#entries").addEventListener("click", async e=>{
     const st = editState;
     const oldPaths = item.imgs.slice();
     item.title = title;
-    item.ver = f.ver.trim();
-    item.date = f.date;
+    item.note = f.note.trim();
+    item.end = f.end;
+    item.type = f.type;
+    item.folder = f.folder;
+    if(f.folder){ openFolders.add(f.folder); saveOpen(); }
     if(f.on){
       item.bonus = {
         name: f.bname.trim(),
@@ -551,72 +796,4 @@ $("#entries").addEventListener("click", async e=>{
       const finalPaths = [];
       const newCount = st.imgs.filter(im=>!im.path).length;
       let done = 0;
-      for(const im of st.imgs){
-        if(im.path){ finalPaths.push(im.path); continue; }
-        done++; status(`사진 업로드 중... (${done}/${newCount})`);
-        const p = newPath(item.id);
-        await putFile(p, im.data.split(",")[1], "add image");
-        previews[p] = im.data;
-        finalPaths.push(p);
-      }
-      item.imgs = finalPaths;
-      status("저장 중...");
-      await saveData();
-      for(const p of oldPaths){ if(!finalPaths.includes(p)) await deleteFile(p); }
-      editState = null; render();
-      status("✅ 저장됐어요! (사이트 반영까지 1~2분 걸려요)", 4000);
-    }catch(err){
-      btn.disabled = false;
-      status("❌ "+err.message, 4000);
-    }
-  } else if(act === "del"){
-    if(!confirm(`"${item.title}" 을(를) 삭제할까요?`)) return;
-    const paths = item.imgs.slice();
-    entries = entries.filter(x => x.id !== item.id);
-    if(editState && editState.id === item.id) editState = null;
-    render(); status("삭제 중...");
-    try{
-      await saveData();
-      for(const p of paths) await deleteFile(p);
-      status("✅ 삭제됐어요!", 3000);
-    }catch(err){ status("❌ "+err.message, 4000); }
-  }
-});
-$("#lightbox").addEventListener("click", ()=> $("#lightbox").style.display = "none");
-$("#search").addEventListener("input", render);
-
-function renderSummary(){
-  if(!entries.length){
-    $("#stats").innerHTML = "";
-    $("#matrix").innerHTML = `<div class="empty">등록된 미공포가 없어요.</div>`;
-    return;
-  }
-  const totals = MEMBERS.map(m => entries.filter(e => (mine[e.id]||[]).includes(m)).length);
-  const albums = entries.reduce((s,e)=> e.bonus ? s + ((mineB[e.id]||{}).sets||0)*(e.bonus.per||3) : s, 0);
-  $("#stats").innerHTML = `<span class="stat">미공포 ${entries.length}종</span>` +
-    (albums ? `<span class="stat">세트 특전 앨범 ${albums}장</span>` : "") +
-    MEMBERS.map((m,i)=>`<span class="stat">${m} O ${totals[i]}</span>`).join("");
-  $("#matrix").innerHTML = `
-    <table>
-      <thead><tr><th>미공포</th>${MEMBERS.map(m=>`<th>${m}</th>`).join("")}</tr></thead>
-      <tbody>
-        ${entries.map(e=>`<tr><td>${esc(e.title)}${e.ver?`<small>${esc(e.ver)}</small>`:""}</td>${MEMBERS.map(m=>(mine[e.id]||[]).includes(m)?`<td class="o">O</td>`:`<td class="x">X</td>`).join("")}</tr>`).join("")}
-      </tbody>
-      <tfoot><tr><td>O 합계</td>${totals.map(n=>`<td>${n}</td>`).join("")}</tr></tfoot>
-    </table>`;
-}
-
-document.querySelectorAll(".tab").forEach(b=>{
-  b.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active", x===b));
-    $("#view-list").style.display = b.dataset.tab==="list" ? "" : "none";
-    $("#view-sum").style.display = b.dataset.tab==="sum" ? "" : "none";
-  });
-});
-
-updatePicBtn();
-setAdmin(!!token);
-loadData();
-</script>
-</body>
-</html>
+      for(const im of
