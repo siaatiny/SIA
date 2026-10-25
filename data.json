@@ -6,7 +6,13 @@
    "ver": "",
    "date": "2026-10-23",
    "imgs": [],
-   "bonus": null
+   "bonus": {
+    "name": "수줍이/까칠이 (양면) 24종 구매 시 8종 중복 없음",
+    "per": 3,
+    "pick": 1,
+    "types": [],
+    "goal": 0
+   }
   },
   {
    "id": "mvnnsraj",
