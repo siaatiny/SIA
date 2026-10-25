@@ -1,10 +1,50 @@
 {
+ "folders": [
+  {
+   "id": "d1",
+   "name": "NU뮤직"
+  },
+  {
+   "id": "d2",
+   "name": "애플뮤직"
+  },
+  {
+   "id": "d3",
+   "name": "케이팝스토어"
+  },
+  {
+   "id": "d4",
+   "name": "메이크스타"
+  },
+  {
+   "id": "d5",
+   "name": "헬로라이브"
+  },
+  {
+   "id": "d6",
+   "name": "YES24"
+  },
+  {
+   "id": "d7",
+   "name": "사운드웨이브"
+  },
+  {
+   "id": "d8",
+   "name": "muuve"
+  },
+  {
+   "id": "d9",
+   "name": "점프업"
+  }
+ ],
  "entries": [
   {
    "id": "mvnnwy5v",
    "title": "애플뮤직 미공포 (디지팩) 벽찌빵 VER.",
-   "ver": "",
-   "date": "2026-10-23",
+   "note": "",
+   "end": "2026-10-23",
+   "type": "digi",
+   "folder": "",
    "imgs": [
     "images/mvnnwy5v_mvnnxef700a.jpg"
    ],
@@ -13,24 +53,30 @@
   {
    "id": "mvnnvvon",
    "title": "점프업 미공포 (디지팩 유닛) 짝꿍 VER.",
-   "ver": "",
-   "date": "2026-10-23",
+   "note": "",
+   "end": "2026-10-23",
+   "type": "unit",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnnv7s0",
    "title": "점프업 미공포 (디지팩) 뾰루퉁 VER.",
-   "ver": "",
-   "date": "2026-10-23",
+   "note": "",
+   "end": "2026-10-23",
+   "type": "digi",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnnts4h",
    "title": "점프업 미공포 (A/ DIARY / D) 촉감놀이 VER.",
-   "ver": "",
-   "date": "2026-10-23",
+   "note": "",
+   "end": "2026-10-23",
+   "type": "adz",
+   "folder": "",
    "imgs": [],
    "bonus": {
     "name": "수줍이/까칠이 (양면) 24종 구매 시 8종 중복 없음",
@@ -43,40 +89,50 @@
   {
    "id": "mvnnsraj",
    "title": "muvve 미공포 (디지팩) 전원 단독 치카포카 VER.",
-   "ver": "",
-   "date": "2026-10-20",
+   "note": "",
+   "end": "2026-10-20",
+   "type": "digi",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnnsejf",
    "title": "muvve 미공포 (A/ DIARY / D) 전원 단독 넥타이 VER.",
-   "ver": "",
-   "date": "2026-10-20",
+   "note": "",
+   "end": "2026-10-20",
+   "type": "adz",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnnixxy",
    "title": "사운드 웨이브 미공포 (디지팩 유닛) 볼찌빵 VS 꽃받침 (유닛) VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "unit",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnni3wd",
    "title": "사운드웨이브 미공포 (디지팩) 만두야! 돼지해! VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "digi",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnngotp",
    "title": "사운드웨이브 미공포 (A/ DIARY / D) 움직이면 쏩니다 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "adz",
+   "folder": "",
    "imgs": [
     "images/mvnngotp_mvnngotp160.jpg"
    ],
@@ -91,16 +147,20 @@
   {
    "id": "mvnneb4t",
    "title": "YES24 미공포 (A/ DIARY / D) 단독 셀카 포토카드",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "adz",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnna8j9",
    "title": "헬로라이브 미공포 (A / DIARY/ D) 티니는 뒤를 돌아봅니다 오바 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "adz",
+   "folder": "",
    "imgs": [
     "images/mvnna8j9_mvnna8j9vj4.jpg"
    ],
@@ -115,8 +175,10 @@
   {
    "id": "mvnn09dg",
    "title": "메이크스타 미공포 티즈냥 (포카앨범)",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "poca",
+   "folder": "",
    "imgs": [
     "images/mvnn09dg_mvnn09dgw8w.jpg"
    ],
@@ -131,16 +193,20 @@
   {
    "id": "mvnmye0r",
    "title": "케이팝스토어 미공포 (디지팩 유닛) 사이좋은 해적 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "unit",
+   "folder": "",
    "imgs": [],
    "bonus": null
   },
   {
    "id": "mvnmwzbf",
    "title": "케이팝스토어 미공포 (디지팩) 메롱 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "digi",
+   "folder": "",
    "imgs": [
     "images/mvnmwzbf_mvnmwzbfz8a.jpg"
    ],
@@ -149,8 +215,10 @@
   {
    "id": "mvnmun4i",
    "title": "케이팝스토어 미공포 (A / DIARY / Z) 레이스 두건 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "adz",
+   "folder": "",
    "imgs": [
     "images/mvnmun4i_mvnmun4id8f.jpg"
    ],
@@ -165,8 +233,10 @@
   {
    "id": "mvnmrpci",
    "title": "애플뮤직 미공포 (디지팩 유닛 VER) 꼬옥 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "unit",
+   "folder": "",
    "imgs": [
     "images/mvnmrpci_mvnmrpcistq.jpg"
    ],
@@ -175,8 +245,10 @@
   {
    "id": "mvnmmath",
    "title": "애플뮤직 미공포 (디지팩 VER) 에이티니의 기사님 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "digi",
+   "folder": "",
    "imgs": [
     "images/mvnmmath_mvnmmath9lh.jpg"
    ],
@@ -191,8 +263,10 @@
   {
    "id": "mvnmal87",
    "title": "애플뮤직 미공포 (A / DIARY / Z) 별패치 VER.",
-   "ver": "",
-   "date": "2026-10-13",
+   "note": "",
+   "end": "2026-10-13",
+   "type": "adz",
+   "folder": "",
    "imgs": [
     "images/mvnmal87.jpg"
    ],
@@ -200,9 +274,11 @@
   },
   {
    "id": "mvnlv3rp",
-   "title": "NY 뮤직 미공포 (A / DIARY/ Z VER.) (기타피크 VER.)",
-   "ver": "",
-   "date": "2026-10-13",
+   "title": "NY 뮤직 미공포 (기타피크 VER.)",
+   "note": "",
+   "end": "2026-11-12",
+   "type": "adz",
+   "folder": "d1",
    "imgs": [
     "images/mvnlv3rp.jpg"
    ],
