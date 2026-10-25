@@ -8,7 +8,13 @@
    "imgs": [
     "images/mvnn09dg_mvnn09dgw8w.jpg"
    ],
-   "bonus": null
+   "bonus": {
+    "name": "단독 인화 폴라로이드",
+    "per": 8,
+    "pick": 8,
+    "types": [],
+    "goal": 0
+   }
   },
   {
    "id": "mvnmye0r",
