@@ -8,7 +8,13 @@
    "imgs": [
     "images/mvnna8j9_mvnna8j9vj4.jpg"
    ],
-   "bonus": null
+   "bonus": {
+    "name": "손거울 (볼꼬집 VER.)",
+    "per": 3,
+    "pick": 1,
+    "types": [],
+    "goal": 0
+   }
   },
   {
    "id": "mvnn09dg",
