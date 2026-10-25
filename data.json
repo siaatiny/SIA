@@ -6,7 +6,13 @@
    "ver": "",
    "date": "2026-10-13",
    "imgs": [],
-   "bonus": null
+   "bonus": {
+    "name": "",
+    "per": 3,
+    "pick": 3,
+    "types": [],
+    "goal": 0
+   }
   },
   {
    "id": "mvnnixxy",
