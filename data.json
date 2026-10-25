@@ -4,7 +4,14 @@
    "id": "mvnlv3rp",
    "title": "NY 뮤직 미공포 (A / DIARY/ Z VER.) (기타피크 VER.)",
    "date": "2026-10-13",
-   "img": "images/mvnlv3rp.jpg"
+   "img": "images/mvnlv3rp.jpg",
+   "bonus": {
+    "name": "유닛 인화사진",
+    "per": 3,
+    "pick": 2,
+    "types": [],
+    "goal": 0
+   }
   }
  ]
 }
