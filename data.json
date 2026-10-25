@@ -4,11 +4,17 @@
    "id": "mvnmmath",
    "title": "애플뮤직 미공포 (디지팩 VER) 에이티니의 기사님 VER.",
    "ver": "",
-   "date": "",
+   "date": "2026-10-13",
    "imgs": [
     "images/mvnmmath_mvnmmath9lh.jpg"
    ],
-   "bonus": null
+   "bonus": {
+    "name": "에이티니 이따만큼 사랑해 VER",
+    "per": 8,
+    "pick": 1,
+    "types": [],
+    "goal": 4
+   }
   },
   {
    "id": "mvnmal87",
