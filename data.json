@@ -8,7 +8,13 @@
    "imgs": [
     "images/mvnngotp_mvnngotp160.jpg"
    ],
-   "bonus": null
+   "bonus": {
+    "name": "같이 먹쟝! VER",
+    "per": 3,
+    "pick": 3,
+    "types": [],
+    "goal": 0
+   }
   },
   {
    "id": "mvnneb4t",
