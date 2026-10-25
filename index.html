@@ -23,13 +23,15 @@ main{max-width:900px;margin:0 auto;padding:8px 16px 80px}
 .tab.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
 .box h2{margin:0 0 10px;font-size:15px}
-input[type=text],input[type=date],input[type=search]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:8px}
+input[type=text],input[type=number],input[type=date],input[type=search]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font-size:14px;margin-bottom:8px}
+label.f{display:block;font-size:12px;color:var(--sub);margin-bottom:2px}
 button{font-family:inherit}
 .btn{padding:10px 14px;border:none;border-radius:8px;background:var(--accent);color:var(--bg);font-size:14px;cursor:pointer}
 .btn:disabled{opacity:.5}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
 .btn.small{padding:6px 10px;font-size:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .preview{max-width:100%;max-height:240px;border-radius:8px;margin:6px 0;display:none}
 .entry-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
 .entry-title{font-weight:700;font-size:16px;word-break:keep-all}
@@ -56,7 +58,17 @@ tfoot td{font-weight:700;color:var(--sub)}
 footer{text-align:center;margin-top:30px}
 .admin-only{display:none}
 body.admin .admin-only{display:block}
-body.admin .admin-only.inline{display:inline-block}
+body.admin .admin-only.inline{display:flex}
+/* 세트 특전 */
+.bonus{margin-top:14px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--bg)}
+.bonus-title{font-weight:700;font-size:14px;margin-bottom:8px}
+.counter{display:flex;align-items:center;gap:12px}
+.counter button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:20px;cursor:pointer}
+.counter .num{font-size:18px;font-weight:800;min-width:70px;text-align:center}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:10px}
+.bar>div{height:100%;background:var(--on);width:0}
+.editbox{margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.editbox .chk{display:flex;gap:6px;align-items:center;font-size:14px;margin:6px 0 10px}
 </style>
 </head>
 <body>
@@ -81,6 +93,7 @@ body.admin .admin-only.inline{display:inline-block}
       <div class="row" style="margin-top:8px">
         <button class="btn" id="addBtn">등록하기</button>
       </div>
+      <p class="note">세트 특전은 등록 후 각 카드의 "수정" 버튼에서 추가할 수 있어요.</p>
     </div>
 
     <input type="search" id="search" placeholder="🔍 미공포 검색">
@@ -116,15 +129,17 @@ const REPO  = OVERRIDE_REPO  || ((seg && seg !== "index.html") ? seg : host);
 
 const TOKEN_KEY = "pc-admin-token";
 const MINE_KEY  = "pc-mine-v2";
+const BONUS_KEY = "pc-bonus-v1";
 
 let entries = [];
+let editingId = null;
 let token = localStorage.getItem(TOKEN_KEY) || "";
-let mine = {};
-try { mine = JSON.parse(localStorage.getItem(MINE_KEY)) || {}; } catch(e){}
+let mine = {};   try { mine  = JSON.parse(localStorage.getItem(MINE_KEY))  || {}; } catch(e){}
+let mineB = {};  try { mineB = JSON.parse(localStorage.getItem(BONUS_KEY)) || {}; } catch(e){}
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function saveMine(){ localStorage.setItem(MINE_KEY, JSON.stringify(mine)); }
+function saveMine(){ localStorage.setItem(MINE_KEY, JSON.stringify(mine)); localStorage.setItem(BONUS_KEY, JSON.stringify(mineB)); }
 function status(msg, ms){
   const s = $("#status"); s.textContent = msg; s.style.display = msg ? "block" : "none";
   if(ms) setTimeout(()=> s.style.display = "none", ms);
@@ -157,7 +172,7 @@ async function deleteFile(path){
   }catch(e){}
 }
 async function saveData(){
-  const clean = entries.map(({id,title,date,img}) => ({id,title,date,img}));
+  const clean = entries.map(({id,title,date,img,bonus}) => ({id,title,date,img,bonus:bonus||null}));
   const cur = await getFile("data.json");
   await putFile("data.json", b64enc(JSON.stringify({entries:clean}, null, 1)), "update data", cur && cur.sha);
 }
@@ -201,6 +216,7 @@ function compress(file, max=1000){
 function setAdmin(on){
   document.body.classList.toggle("admin", on);
   $("#loginBtn").textContent = on ? "🔓 관리자 로그아웃" : "🔑 관리자 로그인";
+  if(!on) editingId = null;
   render();
 }
 $("#loginBtn").addEventListener("click", async ()=>{
@@ -238,7 +254,7 @@ $("#addBtn").addEventListener("click", async ()=>{
       img = "images/"+id+".jpg";
       await putFile(img, pendingImg.split(",")[1], "add image");
     }
-    entries.unshift({ id, title, date: $("#newDate").value, img, _p: pendingImg });
+    entries.unshift({ id, title, date: $("#newDate").value, img, bonus:null, _p: pendingImg });
     await saveData();
     $("#newTitle").value = ""; $("#newDate").value = ""; $("#newImg").value = "";
     pendingImg = ""; $("#newPreview").style.display = "none";
@@ -248,6 +264,61 @@ $("#addBtn").addEventListener("click", async ()=>{
 });
 
 /* ===== 화면 ===== */
+function bonusHTML(e){
+  const b = e.bonus;
+  if(!b) return "";
+  const per = b.per || 3, pick = b.pick || 0, types = b.types || [], goal = b.goal || 0;
+  const bm = mineB[e.id] || { sets:0, types:[] };
+  const sets = bm.sets || 0;
+  let info = `앨범 <b>${sets*per}장</b> 구매`;
+  if(pick) info += ` · 인화사진 <b>${sets*pick}장</b> 받음`;
+  const lines = [info];
+  if(types.length && pick) lines.push(`전종 모으려면 최소 ${Math.ceil(types.length/pick)}세트 (앨범 ${Math.ceil(types.length/pick)*per}장), 랜덤이라 더 필요할 수 있어요`);
+  const pct = goal ? Math.min(100, Math.round(sets/goal*100)) : 0;
+  return `
+  <div class="bonus">
+    <div class="bonus-title">🎁 세트 특전 · ${esc(b.name || "세트 특전")} <span class="note">(세트 = 앨범 ${per}장${pick?`, ${pick}종 증정`:""})</span></div>
+    <div class="counter">
+      <button data-act="bminus">−</button>
+      <span class="num">${sets}세트</span>
+      <button data-act="bplus">+</button>
+    </div>
+    ${goal ? `<div class="bar"><div style="width:${pct}%"></div></div>
+    <div class="note">목표 ${goal}세트 (앨범 ${goal*per}장) 중 ${sets}세트 · ${pct}%</div>` : ""}
+    <div class="note">${lines.join("<br>")}</div>
+    ${types.length ? `<div class="chips">${types.map((t,i)=>{ const on=(bm.types||[]).includes(i);
+      return `<span class="chip ${on?'on':''}" data-act="btype" data-i="${i}">${esc(t)}<b>${on?'O':'X'}</b></span>`; }).join("")}</div>` : ""}
+  </div>`;
+}
+
+function editHTML(e){
+  const b = e.bonus || {};
+  return `
+  <div class="editbox">
+    <label class="f">미공포 이름</label>
+    <input type="text" class="ed-title" value="${esc(e.title)}">
+    <label class="f">날짜</label>
+    <input type="date" class="ed-date" value="${esc(e.date||"")}">
+    <label class="chk"><input type="checkbox" class="ed-on" ${e.bonus?"checked":""}> 세트 특전 사용</label>
+    <div class="ed-fields" style="display:${e.bonus?"block":"none"}">
+      <label class="f">특전 이름</label>
+      <input type="text" class="ed-bname" placeholder="예) 유닛 인화사진" value="${esc(b.name||"")}">
+      <div class="grid2">
+        <div><label class="f">세트당 앨범 수</label><input type="number" min="1" class="ed-per" value="${b.per||3}"></div>
+        <div><label class="f">세트당 증정 수</label><input type="number" min="0" class="ed-pick" value="${b.pick||2}"></div>
+      </div>
+      <label class="f">특전 종류 이름 (쉼표로 구분, 비워도 됨)</label>
+      <input type="text" class="ed-types" placeholder="예) 유닛A, 유닛B, 유닛C, 유닛D" value="${esc((b.types||[]).join(", "))}">
+      <label class="f">목표 세트 수 (예: 4세트 = 앨범 12장)</label>
+      <input type="number" min="0" class="ed-goal" value="${b.goal||0}">
+    </div>
+    <div class="row">
+      <button class="btn small" data-act="saveedit">저장</button>
+      <button class="btn ghost small" data-act="canceledit">취소</button>
+    </div>
+  </div>`;
+}
+
 function render(){
   const q = $("#search").value.trim().toLowerCase();
   const list = entries.filter(e => e.title.toLowerCase().includes(q));
@@ -258,6 +329,7 @@ function render(){
     box.innerHTML = list.map(e => {
       const my = mine[e.id] || [];
       const src = e._p || e.img;
+      const editing = token && editingId === e.id;
       return `
       <div class="box entry" data-id="${e.id}">
         <div class="entry-head">
@@ -266,20 +338,28 @@ function render(){
             ${e.date ? `<div class="entry-date">${esc(e.date)}</div>` : ""}
           </div>
           <div class="row admin-only inline">
-            <button class="btn ghost small" data-act="rename">수정</button>
+            <button class="btn ghost small" data-act="edit">수정</button>
             <button class="btn ghost small" data-act="del">삭제</button>
           </div>
         </div>
+        ${editing ? editHTML(e) : ""}
         ${src ? `<img src="${src}" alt="${esc(e.title)}" data-act="zoom">` : ""}
         <div class="chips">
           ${MEMBERS.map(m => { const on = my.includes(m);
             return `<span class="chip ${on?'on':''}" data-act="toggle" data-m="${m}">${m}<b>${on?'O':'X'}</b></span>`; }).join("")}
         </div>
+        ${bonusHTML(e)}
       </div>`;
     }).join("");
   }
   renderSummary();
 }
+
+$("#entries").addEventListener("change", e=>{
+  if(e.target.classList.contains("ed-on")){
+    e.target.closest(".editbox").querySelector(".ed-fields").style.display = e.target.checked ? "block" : "none";
+  }
+});
 
 $("#entries").addEventListener("click", async e=>{
   const t = e.target.closest("[data-act]");
@@ -287,19 +367,44 @@ $("#entries").addEventListener("click", async e=>{
   const card = t.closest(".entry");
   const item = entries.find(x => x.id === card.dataset.id);
   const act = t.dataset.act;
+
   if(act === "toggle"){
     const m = t.dataset.m;
     const my = mine[item.id] || [];
     mine[item.id] = my.includes(m) ? my.filter(x=>x!==m) : [...my, m];
     saveMine(); render();
+  } else if(act === "bplus" || act === "bminus"){
+    const bm = mineB[item.id] || { sets:0, types:[] };
+    bm.sets = Math.max(0, (bm.sets||0) + (act==="bplus" ? 1 : -1));
+    mineB[item.id] = bm; saveMine(); render();
+  } else if(act === "btype"){
+    const bm = mineB[item.id] || { sets:0, types:[] };
+    const i = +t.dataset.i;
+    bm.types = (bm.types||[]).includes(i) ? bm.types.filter(x=>x!==i) : [...(bm.types||[]), i];
+    mineB[item.id] = bm; saveMine(); render();
   } else if(act === "zoom"){
     $("#lightbox img").src = item._p || item.img; $("#lightbox").style.display = "flex";
-  } else if(token && act === "rename"){
-    const n = prompt("미공포 이름 수정", item.title);
-    if(n && n.trim()){
-      item.title = n.trim(); render(); status("저장 중...");
-      try{ await saveData(); status("✅ 저장됐어요!", 3000); }catch(err){ status("❌ "+err.message, 4000); }
-    }
+  } else if(token && act === "edit"){
+    editingId = (editingId === item.id) ? null : item.id; render();
+  } else if(token && act === "canceledit"){
+    editingId = null; render();
+  } else if(token && act === "saveedit"){
+    const eb = card.querySelector(".editbox");
+    const title = eb.querySelector(".ed-title").value.trim();
+    if(!title){ alert("미공포 이름을 입력해 주세요."); return; }
+    item.title = title;
+    item.date = eb.querySelector(".ed-date").value;
+    if(eb.querySelector(".ed-on").checked){
+      item.bonus = {
+        name: eb.querySelector(".ed-bname").value.trim(),
+        per:  Math.max(1, parseInt(eb.querySelector(".ed-per").value)  || 3),
+        pick: Math.max(0, parseInt(eb.querySelector(".ed-pick").value) || 0),
+        types: eb.querySelector(".ed-types").value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean),
+        goal: Math.max(0, parseInt(eb.querySelector(".ed-goal").value) || 0)
+      };
+    } else item.bonus = null;
+    editingId = null; render(); status("저장 중...");
+    try{ await saveData(); status("✅ 저장됐어요!", 3000); }catch(err){ status("❌ "+err.message, 4000); }
   } else if(token && act === "del"){
     if(!confirm(`"${item.title}" 을(를) 삭제할까요?`)) return;
     entries = entries.filter(x => x.id !== item.id); render(); status("삭제 중...");
@@ -320,7 +425,9 @@ function renderSummary(){
     return;
   }
   const totals = MEMBERS.map(m => entries.filter(e => (mine[e.id]||[]).includes(m)).length);
+  const albums = entries.reduce((s,e)=> e.bonus ? s + ((mineB[e.id]||{}).sets||0)*(e.bonus.per||3) : s, 0);
   $("#stats").innerHTML = `<span class="stat">미공포 ${entries.length}종</span>` +
+    (albums ? `<span class="stat">세트 특전 앨범 ${albums}장</span>` : "") +
     MEMBERS.map((m,i)=>`<span class="stat">${m} O ${totals[i]}</span>`).join("");
   $("#matrix").innerHTML = `
     <table>
