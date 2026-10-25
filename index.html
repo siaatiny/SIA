@@ -27,25 +27,41 @@ input[type=text],input[type=number],input[type=date],input[type=search]{width:10
 label.f{display:block;font-size:12px;color:var(--sub);margin-bottom:2px}
 button{font-family:inherit}
 .btn{padding:10px 14px;border:none;border-radius:8px;background:var(--accent);color:var(--bg);font-size:14px;cursor:pointer}
-.btn:disabled{opacity:.5}
+.btn:disabled{opacity:.4;cursor:default}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
 .btn.small{padding:6px 10px;font-size:12px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.preview{max-width:100%;max-height:240px;border-radius:8px;margin:6px 0;display:none}
+.toolbar{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
+.toolbar input{margin-bottom:0;flex:1}
+.toolbar .btn{white-space:nowrap;padding:10px 12px;font-size:13px}
+
+/* ===== 리스트 카드 ===== */
+.entry{border:2px solid var(--text);border-radius:6px;padding:14px 16px}
 .entry-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-.entry-title{font-weight:700;font-size:16px;word-break:keep-all}
-.entry-date{color:var(--sub);font-size:12px}
-.entry img{width:100%;border-radius:10px;margin:10px 0;display:block;cursor:zoom-in}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.chip{padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--sub);font-size:14px;cursor:pointer;user-select:none}
+.r-title{font-weight:800;font-size:18px;word-break:keep-all}
+.r-ver{font-weight:600;font-size:15px;margin-top:10px;word-break:keep-all}
+.entry-date{color:var(--sub);font-size:12px;margin-top:2px}
+.r-label{font-weight:800;font-size:15px;margin-top:12px}
+.picbtn{margin-top:10px}
+.gallery{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;margin-top:10px;-webkit-overflow-scrolling:touch}
+.gallery img{flex:0 0 100%;width:100%;border-radius:8px;display:block;cursor:zoom-in;scroll-snap-align:start}
+/* 사진 편집 썸네일 */
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:6px 0 10px}
+.ed-thumb{border:1px solid var(--line);border-radius:10px;padding:6px;background:var(--card)}
+.ed-thumb img{width:100%;height:120px;object-fit:cover;border-radius:6px;display:block;margin-bottom:6px}
+.ed-thumb .row{gap:4px}
+.ed-thumb .btn.small{padding:4px 7px;font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--sub);font-size:14px;cursor:pointer;user-select:none}
 .chip b{margin-left:4px}
 .chip.on{background:var(--on);border-color:var(--on);color:var(--on-text);font-weight:700}
 .empty{text-align:center;color:var(--sub);padding:40px 0;font-size:14px}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
 th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:center}
-th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);min-width:130px}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--card);min-width:150px}
+td small{display:block;color:var(--sub);font-size:11px}
 td.o{color:var(--on);font-weight:800}
 td.x{color:var(--sub)}
 tfoot td{font-weight:700;color:var(--sub)}
@@ -60,7 +76,7 @@ footer{text-align:center;margin-top:30px}
 body.admin .admin-only{display:block}
 body.admin .admin-only.inline{display:flex}
 /* 세트 특전 */
-.bonus{margin-top:14px;padding:12px;border:1px dashed var(--line);border-radius:12px;background:var(--bg)}
+.bonus{margin-top:14px;padding:12px;border:1px dashed var(--line);border-radius:10px;background:var(--bg)}
 .bonus-title{font-weight:700;font-size:14px;margin-bottom:8px}
 .counter{display:flex;align-items:center;gap:12px}
 .counter button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:20px;cursor:pointer}
@@ -74,7 +90,7 @@ body.admin .admin-only.inline{display:flex}
 <body>
 <header>
   <h1>🏴‍☠️ 미공포 분철 목록</h1>
-  <p>탑승한 멤버를 눌러 O / X 로 표시하세요. 내 선택은 이 브라우저에 자동 저장돼요.</p>
+  <p>선택여부에서 탑승한 멤버를 눌러 O / X 로 표시하세요. 내 선택은 이 브라우저에 자동 저장돼요.</p>
 </header>
 <main>
   <div class="tabs">
@@ -86,18 +102,26 @@ body.admin .admin-only.inline{display:flex}
     <!-- 관리자 전용: 미공포 등록 -->
     <div class="box admin-only" id="addBox">
       <h2>새 미공포 등록 (관리자)</h2>
-      <input type="text" id="newTitle" placeholder="예) 헬로라이브(볼찌빵VER.) 26.11.08 팬싸인회 미공개 포카">
+      <label class="f">미공포 이름</label>
+      <input type="text" id="newTitle" placeholder="예) 애플뮤직 미공포">
+      <label class="f">버전</label>
+      <input type="text" id="newVer" placeholder="예) 디지팩 VER. 에이티니의 기사님 VER.">
+      <label class="f">날짜 (선택)</label>
       <input type="date" id="newDate">
-      <input type="file" id="newImg" accept="image/*">
-      <img id="newPreview" class="preview" alt="">
-      <div class="row" style="margin-top:8px">
+      <label class="f">사진 (여러 장 선택 가능)</label>
+      <input type="file" id="newImg" accept="image/*" multiple>
+      <div class="thumbs" id="newThumbs"></div>
+      <div class="row">
         <button class="btn" id="addBtn">등록하기</button>
       </div>
       <p class="note">세트 특전은 등록 후 각 카드의 "수정" 버튼에서 추가할 수 있어요.</p>
     </div>
 
-    <input type="search" id="search" placeholder="🔍 미공포 검색">
-    <div id="entries"></div>
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="🔍 미공포 검색">
+      <button class="btn ghost" id="picToggle">📷 사진 모두 보기</button>
+    </div>
+    <div id="entries" style="margin-top:12px"></div>
   </section>
 
   <section id="view-sum" style="display:none">
@@ -130,9 +154,13 @@ const REPO  = OVERRIDE_REPO  || ((seg && seg !== "index.html") ? seg : host);
 const TOKEN_KEY = "pc-admin-token";
 const MINE_KEY  = "pc-mine-v2";
 const BONUS_KEY = "pc-bonus-v1";
+const PIC_KEY   = "pc-showpics";
 
 let entries = [];
-let editingId = null;
+let editState = null;      // {id, imgs:[{path,data}], f:{...}}
+let previews = {};         // 방금 올린 사진 미리보기 (path -> dataURL)
+let showPics = localStorage.getItem(PIC_KEY) === "1";
+let openPics = new Set();  // 개별로 사진을 펼친 항목
 let token = localStorage.getItem(TOKEN_KEY) || "";
 let mine = {};   try { mine  = JSON.parse(localStorage.getItem(MINE_KEY))  || {}; } catch(e){}
 let mineB = {};  try { mineB = JSON.parse(localStorage.getItem(BONUS_KEY)) || {}; } catch(e){}
@@ -144,6 +172,8 @@ function status(msg, ms){
   const s = $("#status"); s.textContent = msg; s.style.display = msg ? "block" : "none";
   if(ms) setTimeout(()=> s.style.display = "none", ms);
 }
+const newPath = id => "images/"+id+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+".jpg";
+const srcOf = p => previews[p] || p;
 
 /* ===== GitHub API ===== */
 const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/`;
@@ -172,20 +202,26 @@ async function deleteFile(path){
   }catch(e){}
 }
 async function saveData(){
-  const clean = entries.map(({id,title,date,img,bonus}) => ({id,title,date,img,bonus:bonus||null}));
+  const clean = entries.map(({id,title,ver,date,imgs,bonus}) => ({id,title,ver:ver||"",date,imgs:imgs||[],bonus:bonus||null}));
   const cur = await getFile("data.json");
   await putFile("data.json", b64enc(JSON.stringify({entries:clean}, null, 1)), "update data", cur && cur.sha);
 }
 
-/* ===== 데이터 불러오기 ===== */
+/* ===== 데이터 불러오기 (예전 형식 자동 변환) ===== */
+function normalize(list){
+  return (list||[]).map(e => {
+    const imgs = Array.isArray(e.imgs) ? e.imgs : (e.img ? [e.img] : []);
+    return { id:e.id, title:e.title, ver:e.ver||"", date:e.date||"", imgs, bonus:e.bonus||null };
+  });
+}
 async function loadData(){
   try{
     if(token && OWNER){
       const f = await getFile("data.json");
-      entries = f ? (JSON.parse(b64dec(f.content)).entries || []) : [];
+      entries = f ? normalize(JSON.parse(b64dec(f.content)).entries) : [];
     } else {
       const r = await fetch("data.json?t="+Date.now());
-      entries = r.ok ? ((await r.json()).entries || []) : [];
+      entries = r.ok ? normalize((await r.json()).entries) : [];
     }
   }catch(e){ entries = []; }
   render();
@@ -216,7 +252,7 @@ function compress(file, max=1000){
 function setAdmin(on){
   document.body.classList.toggle("admin", on);
   $("#loginBtn").textContent = on ? "🔓 관리자 로그아웃" : "🔑 관리자 로그인";
-  if(!on) editingId = null;
+  if(!on) editState = null;
   render();
 }
 $("#loginBtn").addEventListener("click", async ()=>{
@@ -235,33 +271,102 @@ $("#loginBtn").addEventListener("click", async ()=>{
   }catch(e){ alert("토큰이 올바르지 않거나 이 저장소에 쓰기 권한이 없어요."); }
 });
 
+/* ===== 사진 보기 토글 ===== */
+function updatePicBtn(){ $("#picToggle").textContent = showPics ? "📷 사진 모두 숨기기" : "📷 사진 모두 보기"; }
+$("#picToggle").addEventListener("click", ()=>{
+  showPics = !showPics; openPics.clear();
+  localStorage.setItem(PIC_KEY, showPics ? "1" : "0");
+  updatePicBtn(); render();
+});
+
 /* ===== 미공포 등록 (관리자) ===== */
-let pendingImg = "";
+let pendingImgs = [];   // dataURL 배열
+function renderNewThumbs(){
+  $("#newThumbs").innerHTML = pendingImgs.map((d,i)=>`
+    <div class="ed-thumb"><img src="${d}" alt="">
+      <div class="row"><button class="btn ghost small" data-newdel="${i}">✕ 빼기</button></div>
+    </div>`).join("");
+}
 $("#newImg").addEventListener("change", async e=>{
-  const f = e.target.files[0];
-  if(!f) return;
-  pendingImg = await compress(f);
-  const p = $("#newPreview"); p.src = pendingImg; p.style.display = "block";
+  for(const f of e.target.files) pendingImgs.push(await compress(f));
+  e.target.value = ""; renderNewThumbs();
+});
+$("#newThumbs").addEventListener("click", e=>{
+  const b = e.target.closest("[data-newdel]");
+  if(b){ pendingImgs.splice(+b.dataset.newdel, 1); renderNewThumbs(); }
 });
 $("#addBtn").addEventListener("click", async ()=>{
   const title = $("#newTitle").value.trim();
   if(!title){ alert("미공포 이름을 입력해 주세요."); return; }
-  const btn = $("#addBtn"); btn.disabled = true; status("저장 중...");
+  const btn = $("#addBtn"); btn.disabled = true;
   try{
     const id = Date.now().toString(36);
-    let img = "";
-    if(pendingImg){
-      img = "images/"+id+".jpg";
-      await putFile(img, pendingImg.split(",")[1], "add image");
+    const imgs = [];
+    for(let i=0;i<pendingImgs.length;i++){
+      status(`사진 업로드 중... (${i+1}/${pendingImgs.length})`);
+      const p = newPath(id);
+      await putFile(p, pendingImgs[i].split(",")[1], "add image");
+      previews[p] = pendingImgs[i];
+      imgs.push(p);
     }
-    entries.unshift({ id, title, date: $("#newDate").value, img, bonus:null, _p: pendingImg });
+    status("저장 중...");
+    entries.unshift({ id, title, ver: $("#newVer").value.trim(), date: $("#newDate").value, imgs, bonus:null });
     await saveData();
-    $("#newTitle").value = ""; $("#newDate").value = ""; $("#newImg").value = "";
-    pendingImg = ""; $("#newPreview").style.display = "none";
+    $("#newTitle").value = ""; $("#newVer").value = ""; $("#newDate").value = "";
+    pendingImgs = []; renderNewThumbs();
     render(); status("✅ 저장됐어요! (사이트 반영까지 1~2분 걸려요)", 4000);
   }catch(e){ status("❌ "+e.message, 4000); }
   btn.disabled = false;
 });
+
+/* ===== 수정 상태 ===== */
+function startEdit(item){
+  const b = item.bonus || {};
+  editState = {
+    id: item.id,
+    imgs: item.imgs.map(p => ({ path:p, data:null })),
+    f: {
+      title:item.title, ver:item.ver||"", date:item.date||"", on:!!item.bonus,
+      bname:b.name||"", per:b.per||3, pick:(b.pick!=null?b.pick:2),
+      types:(b.types||[]).join(", "), goal:b.goal||0
+    }
+  };
+}
+function captureEdit(){
+  if(!editState) return;
+  const eb = document.querySelector(".editbox");
+  if(!eb) return;
+  editState.f = {
+    title: eb.querySelector(".ed-title").value,
+    ver:   eb.querySelector(".ed-ver").value,
+    date:  eb.querySelector(".ed-date").value,
+    on:    eb.querySelector(".ed-on").checked,
+    bname: eb.querySelector(".ed-bname").value,
+    per:   eb.querySelector(".ed-per").value,
+    pick:  eb.querySelector(".ed-pick").value,
+    types: eb.querySelector(".ed-types").value,
+    goal:  eb.querySelector(".ed-goal").value
+  };
+}
+function editImgsHTML(){
+  if(!editState.imgs.length) return `<div class="note">사진이 없어요. 아래에서 추가해 주세요.</div>`;
+  const n = editState.imgs.length;
+  return `<div class="thumbs">` + editState.imgs.map((im,i)=>`
+    <div class="ed-thumb">
+      <img src="${im.data || srcOf(im.path)}" alt="">
+      <div class="row">
+        <button class="btn ghost small" data-act="imgl" data-i="${i}" ${i===0?"disabled":""}>◀</button>
+        <button class="btn ghost small" data-act="imgr" data-i="${i}" ${i===n-1?"disabled":""}>▶</button>
+        <button class="btn ghost small" data-act="imgrep" data-i="${i}">교체</button>
+        <button class="btn ghost small" data-act="imgdel" data-i="${i}">삭제</button>
+      </div>
+      <input type="file" accept="image/*" class="rep-input" data-i="${i}" hidden>
+    </div>`).join("") + `</div>`;
+}
+function refreshEditImgs(){
+  const box = document.querySelector(".ed-imgs");
+  if(box) box.innerHTML = editImgsHTML();
+}
 
 /* ===== 화면 ===== */
 function bonusHTML(e){
@@ -291,26 +396,33 @@ function bonusHTML(e){
   </div>`;
 }
 
-function editHTML(e){
-  const b = e.bonus || {};
+function editHTML(){
+  const f = editState.f;
   return `
   <div class="editbox">
     <label class="f">미공포 이름</label>
-    <input type="text" class="ed-title" value="${esc(e.title)}">
-    <label class="f">날짜</label>
-    <input type="date" class="ed-date" value="${esc(e.date||"")}">
-    <label class="chk"><input type="checkbox" class="ed-on" ${e.bonus?"checked":""}> 세트 특전 사용</label>
-    <div class="ed-fields" style="display:${e.bonus?"block":"none"}">
+    <input type="text" class="ed-title" value="${esc(f.title)}">
+    <label class="f">버전</label>
+    <input type="text" class="ed-ver" placeholder="예) 디지팩 VER. 에이티니의 기사님 VER." value="${esc(f.ver)}">
+    <label class="f">날짜 (선택)</label>
+    <input type="date" class="ed-date" value="${esc(f.date)}">
+
+    <label class="f">사진 관리</label>
+    <div class="ed-imgs">${editImgsHTML()}</div>
+    <input type="file" accept="image/*" multiple class="add-input" style="margin-bottom:12px">
+
+    <label class="chk"><input type="checkbox" class="ed-on" ${f.on?"checked":""}> 세트 특전 사용</label>
+    <div class="ed-fields" style="display:${f.on?"block":"none"}">
       <label class="f">특전 이름</label>
-      <input type="text" class="ed-bname" placeholder="예) 유닛 인화사진" value="${esc(b.name||"")}">
+      <input type="text" class="ed-bname" placeholder="예) 유닛 인화사진" value="${esc(f.bname)}">
       <div class="grid2">
-        <div><label class="f">세트당 앨범 수</label><input type="number" min="1" class="ed-per" value="${b.per||3}"></div>
-        <div><label class="f">세트당 증정 수</label><input type="number" min="0" class="ed-pick" value="${b.pick||2}"></div>
+        <div><label class="f">세트당 앨범 수</label><input type="number" min="1" class="ed-per" value="${esc(f.per)}"></div>
+        <div><label class="f">세트당 증정 수</label><input type="number" min="0" class="ed-pick" value="${esc(f.pick)}"></div>
       </div>
       <label class="f">특전 종류 이름 (쉼표로 구분, 비워도 됨)</label>
-      <input type="text" class="ed-types" placeholder="예) 유닛A, 유닛B, 유닛C, 유닛D" value="${esc((b.types||[]).join(", "))}">
+      <input type="text" class="ed-types" placeholder="예) 유닛A, 유닛B, 유닛C, 유닛D" value="${esc(f.types)}">
       <label class="f">목표 세트 수 (예: 4세트 = 앨범 12장)</label>
-      <input type="number" min="0" class="ed-goal" value="${b.goal||0}">
+      <input type="number" min="0" class="ed-goal" value="${esc(f.goal)}">
     </div>
     <div class="row">
       <button class="btn small" data-act="saveedit">저장</button>
@@ -320,30 +432,33 @@ function editHTML(e){
 }
 
 function render(){
+  captureEdit();
   const q = $("#search").value.trim().toLowerCase();
-  const list = entries.filter(e => e.title.toLowerCase().includes(q));
+  const list = entries.filter(e => (e.title+" "+e.ver).toLowerCase().includes(q));
   const box = $("#entries");
   if(!list.length){
     box.innerHTML = `<div class="empty">${entries.length ? "검색 결과가 없어요." : "아직 등록된 미공포가 없어요."}</div>`;
   } else {
     box.innerHTML = list.map(e => {
       const my = mine[e.id] || [];
-      const src = e._p || e.img;
-      const editing = token && editingId === e.id;
+      const editing = token && editState && editState.id === e.id;
+      const showGal = !editing && e.imgs.length && (showPics || openPics.has(e.id));
       return `
       <div class="box entry" data-id="${e.id}">
         <div class="entry-head">
-          <div>
-            <div class="entry-title">${esc(e.title)}</div>
-            ${e.date ? `<div class="entry-date">${esc(e.date)}</div>` : ""}
-          </div>
+          <div class="r-title">${esc(e.title)}</div>
           <div class="row admin-only inline">
             <button class="btn ghost small" data-act="edit">수정</button>
             <button class="btn ghost small" data-act="del">삭제</button>
           </div>
         </div>
-        ${editing ? editHTML(e) : ""}
-        ${src ? `<img src="${src}" alt="${esc(e.title)}" data-act="zoom">` : ""}
+        ${e.ver ? `<div class="r-ver">${esc(e.ver)}</div>` : ""}
+        ${e.date ? `<div class="entry-date">${esc(e.date)}</div>` : ""}
+        ${editing ? editHTML() : ""}
+        ${showGal ? `<div class="gallery">${e.imgs.map((p,i)=>`<img src="${srcOf(p)}" alt="${esc(e.title)}" data-act="zoom" data-i="${i}">`).join("")}</div>
+          ${e.imgs.length>1 ? `<div class="note">사진 ${e.imgs.length}장 · 옆으로 넘겨보세요 →</div>` : ""}` : ""}
+        ${(!showPics && !editing && e.imgs.length) ? `<button class="btn ghost small picbtn" data-act="picsw">${openPics.has(e.id) ? "📷 사진 숨기기" : `📷 사진 ${e.imgs.length}장 보기`}</button>` : ""}
+        <div class="r-label">선택여부</div>
         <div class="chips">
           ${MEMBERS.map(m => { const on = my.includes(m);
             return `<span class="chip ${on?'on':''}" data-act="toggle" data-m="${m}">${m}<b>${on?'O':'X'}</b></span>`; }).join("")}
@@ -355,9 +470,16 @@ function render(){
   renderSummary();
 }
 
-$("#entries").addEventListener("change", e=>{
-  if(e.target.classList.contains("ed-on")){
-    e.target.closest(".editbox").querySelector(".ed-fields").style.display = e.target.checked ? "block" : "none";
+$("#entries").addEventListener("change", async e=>{
+  const t = e.target;
+  if(t.classList.contains("ed-on")){
+    t.closest(".editbox").querySelector(".ed-fields").style.display = t.checked ? "block" : "none";
+  } else if(t.classList.contains("add-input") && editState){
+    for(const f of t.files) editState.imgs.push({ path:null, data: await compress(f) });
+    t.value = ""; refreshEditImgs();
+  } else if(t.classList.contains("rep-input") && editState){
+    const f = t.files[0];
+    if(f){ editState.imgs[+t.dataset.i] = { path:null, data: await compress(f) }; refreshEditImgs(); }
   }
 });
 
@@ -373,6 +495,9 @@ $("#entries").addEventListener("click", async e=>{
     const my = mine[item.id] || [];
     mine[item.id] = my.includes(m) ? my.filter(x=>x!==m) : [...my, m];
     saveMine(); render();
+  } else if(act === "picsw"){
+    if(openPics.has(item.id)) openPics.delete(item.id); else openPics.add(item.id);
+    render();
   } else if(act === "bplus" || act === "bminus"){
     const bm = mineB[item.id] || { sets:0, types:[] };
     bm.sets = Math.max(0, (bm.sets||0) + (act==="bplus" ? 1 : -1));
@@ -383,34 +508,76 @@ $("#entries").addEventListener("click", async e=>{
     bm.types = (bm.types||[]).includes(i) ? bm.types.filter(x=>x!==i) : [...(bm.types||[]), i];
     mineB[item.id] = bm; saveMine(); render();
   } else if(act === "zoom"){
-    $("#lightbox img").src = item._p || item.img; $("#lightbox").style.display = "flex";
-  } else if(token && act === "edit"){
-    editingId = (editingId === item.id) ? null : item.id; render();
-  } else if(token && act === "canceledit"){
-    editingId = null; render();
-  } else if(token && act === "saveedit"){
-    const eb = card.querySelector(".editbox");
-    const title = eb.querySelector(".ed-title").value.trim();
+    $("#lightbox img").src = srcOf(item.imgs[+t.dataset.i]); $("#lightbox").style.display = "flex";
+  } else if(!token){
+    return;
+  } else if(act === "edit"){
+    if(editState && editState.id === item.id) editState = null; else startEdit(item);
+    render();
+  } else if(act === "canceledit"){
+    editState = null; render();
+  } else if(act === "imgdel"){
+    editState.imgs.splice(+t.dataset.i, 1); refreshEditImgs();
+  } else if(act === "imgl" || act === "imgr"){
+    const i = +t.dataset.i, j = act === "imgl" ? i-1 : i+1;
+    if(j >= 0 && j < editState.imgs.length){
+      [editState.imgs[i], editState.imgs[j]] = [editState.imgs[j], editState.imgs[i]];
+      refreshEditImgs();
+    }
+  } else if(act === "imgrep"){
+    t.closest(".ed-thumb").querySelector(".rep-input").click();
+  } else if(act === "saveedit"){
+    captureEdit();
+    const f = editState.f;
+    const title = f.title.trim();
     if(!title){ alert("미공포 이름을 입력해 주세요."); return; }
+    const st = editState;
+    const oldPaths = item.imgs.slice();
     item.title = title;
-    item.date = eb.querySelector(".ed-date").value;
-    if(eb.querySelector(".ed-on").checked){
+    item.ver = f.ver.trim();
+    item.date = f.date;
+    if(f.on){
       item.bonus = {
-        name: eb.querySelector(".ed-bname").value.trim(),
-        per:  Math.max(1, parseInt(eb.querySelector(".ed-per").value)  || 3),
-        pick: Math.max(0, parseInt(eb.querySelector(".ed-pick").value) || 0),
-        types: eb.querySelector(".ed-types").value.split(/[,\n]/).map(s=>s.trim()).filter(Boolean),
-        goal: Math.max(0, parseInt(eb.querySelector(".ed-goal").value) || 0)
+        name: f.bname.trim(),
+        per:  Math.max(1, parseInt(f.per)  || 3),
+        pick: Math.max(0, parseInt(f.pick) || 0),
+        types: f.types.split(/[,\n]/).map(s=>s.trim()).filter(Boolean),
+        goal: Math.max(0, parseInt(f.goal) || 0)
       };
     } else item.bonus = null;
-    editingId = null; render(); status("저장 중...");
-    try{ await saveData(); status("✅ 저장됐어요!", 3000); }catch(err){ status("❌ "+err.message, 4000); }
-  } else if(token && act === "del"){
+
+    const btn = t; btn.disabled = true;
+    try{
+      const finalPaths = [];
+      const newCount = st.imgs.filter(im=>!im.path).length;
+      let done = 0;
+      for(const im of st.imgs){
+        if(im.path){ finalPaths.push(im.path); continue; }
+        done++; status(`사진 업로드 중... (${done}/${newCount})`);
+        const p = newPath(item.id);
+        await putFile(p, im.data.split(",")[1], "add image");
+        previews[p] = im.data;
+        finalPaths.push(p);
+      }
+      item.imgs = finalPaths;
+      status("저장 중...");
+      await saveData();
+      for(const p of oldPaths){ if(!finalPaths.includes(p)) await deleteFile(p); }
+      editState = null; render();
+      status("✅ 저장됐어요! (사이트 반영까지 1~2분 걸려요)", 4000);
+    }catch(err){
+      btn.disabled = false;
+      status("❌ "+err.message, 4000);
+    }
+  } else if(act === "del"){
     if(!confirm(`"${item.title}" 을(를) 삭제할까요?`)) return;
-    entries = entries.filter(x => x.id !== item.id); render(); status("삭제 중...");
+    const paths = item.imgs.slice();
+    entries = entries.filter(x => x.id !== item.id);
+    if(editState && editState.id === item.id) editState = null;
+    render(); status("삭제 중...");
     try{
       await saveData();
-      if(item.img) await deleteFile(item.img);
+      for(const p of paths) await deleteFile(p);
       status("✅ 삭제됐어요!", 3000);
     }catch(err){ status("❌ "+err.message, 4000); }
   }
@@ -433,7 +600,7 @@ function renderSummary(){
     <table>
       <thead><tr><th>미공포</th>${MEMBERS.map(m=>`<th>${m}</th>`).join("")}</tr></thead>
       <tbody>
-        ${entries.map(e=>`<tr><td>${esc(e.title)}</td>${MEMBERS.map(m=>(mine[e.id]||[]).includes(m)?`<td class="o">O</td>`:`<td class="x">X</td>`).join("")}</tr>`).join("")}
+        ${entries.map(e=>`<tr><td>${esc(e.title)}${e.ver?`<small>${esc(e.ver)}</small>`:""}</td>${MEMBERS.map(m=>(mine[e.id]||[]).includes(m)?`<td class="o">O</td>`:`<td class="x">X</td>`).join("")}</tr>`).join("")}
       </tbody>
       <tfoot><tr><td>O 합계</td>${totals.map(n=>`<td>${n}</td>`).join("")}</tr></tfoot>
     </table>`;
@@ -447,6 +614,7 @@ document.querySelectorAll(".tab").forEach(b=>{
   });
 });
 
+updatePicBtn();
 setAdmin(!!token);
 loadData();
 </script>
